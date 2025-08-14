@@ -29,9 +29,10 @@ local humanAuto = {
         shakeDelays = {0.1, 0.3, 0.2, 0.4, 0.15, 0.25}
     },
     currentPattern = 1,
-    errorChance = 2, -- 2% chance untuk "miss click"
+    errorChance = 2,
     tirednessFactor = 1.0
 }
+
 local TeleportLocations = {
     ['Zones'] = {
         ['Moosewood'] = CFrame.new(379.875458, 134.500519, 233.5495, -0.033920113, 8.13274355e-08, 0.999424577, 8.98441925e-08, 1, -7.83249803e-08, -0.999424577, 8.7135696e-08, -0.033920113),
@@ -60,6 +61,7 @@ local TeleportLocations = {
         ['Kings Rod'] = CFrame.new(1380.83862, -807.198608, -304.22229, -0.692510426, 9.24755454e-08, 0.72140789, 4.86611427e-08, 1, -8.1475676e-08, -0.72140789, -2.13182219e-08, -0.692510426)
     }
 }
+
 local ZoneNames = {}
 local RodNames = {}
 local RodColors = {}
@@ -103,10 +105,12 @@ FindRod = function()
 end
 message = function(text, time)
     if tooltipmessage then tooltipmessage:Remove() end
-    tooltipmessage = require(lp.PlayerGui:WaitForChild("GeneralUIModule")):GiveToolTip(lp, text)
-    task.spawn(function()
-        task.wait(time)
-        if tooltipmessage then tooltipmessage:Remove(); tooltipmessage = nil end
+    pcall(function()
+        tooltipmessage = require(lp.PlayerGui:WaitForChild("GeneralUIModule")):GiveToolTip(lp, text)
+        task.spawn(function()
+            task.wait(time)
+            if tooltipmessage then tooltipmessage:Remove(); tooltipmessage = nil end
+        end)
     end)
 end
 
@@ -121,8 +125,6 @@ end
 shouldTakeBreak = function()
     local sessionTime = tick() - humanAuto.sessionStart
     local actionCount = humanAuto.castCount + humanAuto.reelCount + humanAuto.shakeCount
-    
-    -- Take break after 15-25 minutes or 80-120 actions
     if sessionTime > (15 * 60) + (math.random() * 10 * 60) or actionCount > 80 + (math.random() * 40) then
         return true
     end
@@ -135,7 +137,6 @@ end
 
 updateTiredness = function()
     local sessionTime = tick() - humanAuto.sessionStart
-    -- Gradual slowdown after 30 minutes
     if sessionTime > 30 * 60 then
         humanAuto.tirednessFactor = 1.0 + ((sessionTime - 30 * 60) / (60 * 60)) * 0.5
     end
@@ -153,406 +154,405 @@ end
 
 --// UI
 local library
-if CheckFunc(makefolder) and (CheckFunc(isfolder) and not isfolder('fisch')) then
-    makefolder('fisch')
-end
-if CheckFunc(writefile) and (CheckFunc(isfile) and not isfile('fisch/library.lua')) then
-    writefile('fisch/library.lua', game:HttpGet('https://raw.githubusercontent.com/MELLISAEFFENDY/gamech/refs/heads/main/library.lua'))
-end
-if CheckFunc(loadfile) then
-    library = loadfile('fisch/library.lua')()
-else
-    library = loadstring(game:HttpGet('https://raw.githubusercontent.com/MELLISAEFFENDY/gamech/refs/heads/main/library.lua'))()
-end
-local Automation = library:CreateWindow('Automation')
-local Modifications = library:CreateWindow('Modifications')
-local Teleports = library:CreateWindow('Teleports')
-local Visuals = library:CreateWindow('Visuals')
-Automation:Section('Autofarm')
-Automation:Toggle('Freeze Character', {location = flags, flag = 'freezechar'})
-Automation:Dropdown('Freeze Character Mode', {location = flags, flag = 'freezecharmode', list = {'Rod Equipped', 'Toggled'}})
-Automation:Toggle('Auto Cast', {location = flags, flag = 'autocast'})
-Automation:Toggle('Auto Shake', {location = flags, flag = 'autoshake'})
-Automation:Toggle('Auto Reel', {location = flags, flag = 'autoreel'})
-Automation:Section('Human-like Automation')
-Automation:Toggle('Human Auto Cast', {location = flags, flag = 'humanautocast'})
-Automation:Toggle('Human Auto Shake', {location = flags, flag = 'humanautoshake'})
-Automation:Toggle('Human Auto Reel', {location = flags, flag = 'humanautoreel'})
-Automation:Slider('Error Rate %', {location = flags, flag = 'errorrate', min = 0, max = 10, default = 2})
-Automation:Slider('Base Delay (s)', {location = flags, flag = 'basedelay', min = 1, max = 5, default = 2.5, precise = true})
-Automation:Button('Take Manual Break (30s)', function()
-    humanAuto.breakTime = true
-    humanAuto.breakDuration = 30
-    message('Taking a 30 second break...', 3)
+pcall(function()
+    if CheckFunc(makefolder) and (CheckFunc(isfolder) and not isfolder('fisch')) then
+        makefolder('fisch')
+    end
+    if CheckFunc(writefile) and (CheckFunc(isfile) and not isfile('fisch/library.lua')) then
+        writefile('fisch/library.lua', game:HttpGet('https://raw.githubusercontent.com/MELLISAEFFENDY/gamech/refs/heads/main/library.lua'))
+    end
+    if CheckFunc(loadfile) then
+        library = loadfile('fisch/library.lua')()
+    else
+        library = loadstring(game:HttpGet('https://raw.githubusercontent.com/MELLISAEFFENDY/gamech/refs/heads/main/library.lua'))()
+    end
 end)
------
-if CheckFunc(hookmetamethod) then
-    Modifications:Section('Hooks')
-    Modifications:Toggle('No AFK Text', {location = flags, flag = 'noafk'})
-    Modifications:Toggle('Perfect Cast', {location = flags, flag = 'perfectcast'})
-    Modifications:Toggle('Always Catch', {location = flags, flag = 'alwayscatch'})
+
+if library then
+    local Automation = library:CreateWindow('Automation')
+    local Modifications = library:CreateWindow('Modifications')
+    local Teleports = library:CreateWindow('Teleports')
+    local Visuals = library:CreateWindow('Visuals')
+    
+    Automation:Section('Autofarm')
+    Automation:Toggle('Freeze Character', {location = flags, flag = 'freezechar'})
+    Automation:Dropdown('Freeze Character Mode', {location = flags, flag = 'freezecharmode', list = {'Rod Equipped', 'Toggled'}})
+    Automation:Toggle('Auto Cast', {location = flags, flag = 'autocast'})
+    Automation:Toggle('Auto Shake', {location = flags, flag = 'autoshake'})
+    Automation:Toggle('Auto Reel', {location = flags, flag = 'autoreel'})
+    
+    Automation:Section('Human-like Automation')
+    Automation:Toggle('Human Auto Cast', {location = flags, flag = 'humanautocast'})
+    Automation:Toggle('Human Auto Shake', {location = flags, flag = 'humanautoshake'})
+    Automation:Toggle('Human Auto Reel', {location = flags, flag = 'humanautoreel'})
+    Automation:Slider('Error Rate %', {location = flags, flag = 'errorrate', min = 0, max = 10, default = 2})
+    Automation:Slider('Base Delay (s)', {location = flags, flag = 'basedelay', min = 1, max = 5, default = 2.5, precise = true})
+    Automation:Button('Take Manual Break (30s)', function()
+        humanAuto.breakTime = true
+        humanAuto.breakDuration = 30
+        message('Taking a 30 second break...', 3)
+    end)
+    
+    if CheckFunc(hookmetamethod) then
+        Modifications:Section('Hooks')
+        Modifications:Toggle('No AFK Text', {location = flags, flag = 'noafk'})
+        Modifications:Toggle('Perfect Cast', {location = flags, flag = 'perfectcast'})
+        Modifications:Toggle('Always Catch', {location = flags, flag = 'alwayscatch'})
+    end
+    Modifications:Section('Client')
+    Modifications:Toggle('Infinite Oxygen', {location = flags, flag = 'infoxygen'})
+    Modifications:Toggle('No Temp & Oxygen', {location = flags, flag = 'nopeakssystems'})
+    
+    Teleports:Section('Locations')
+    Teleports:Dropdown('Zones', {location = flags, flag = 'zones', list = ZoneNames})
+    Teleports:Button('Teleport To Zone', function() 
+        pcall(function()
+            gethrp().CFrame = TeleportLocations['Zones'][flags['zones']] 
+        end)
+    end)
+    Teleports:Dropdown('Rod Locations', {location = flags, flag = 'rodlocations', list = RodNames})
+    Teleports:Button('Teleport To Rod', function() 
+        pcall(function()
+            gethrp().CFrame = TeleportLocations['Rods'][flags['rodlocations']] 
+        end)
+    end)
+    
+    Visuals:Section('Rod')
+    Visuals:Toggle('Body Rod Chams', {location = flags, flag = 'bodyrodchams'})
+    Visuals:Toggle('Rod Chams', {location = flags, flag = 'rodchams'})
+    Visuals:Dropdown('Material', {location = flags, flag = 'rodmaterial', list = {'ForceField', 'Neon'}})
+    Visuals:Section('Fish Abundance')
+    Visuals:Toggle('Free Fish Radar', {location = flags, flag = 'fishabundance'})
 end
-Modifications:Section('Client')
-Modifications:Toggle('Infinite Oxygen', {location = flags, flag = 'infoxygen'})
-Modifications:Toggle('No Temp & Oxygen', {location = flags, flag = 'nopeakssystems'})
------
-Teleports:Section('Locations')
-Teleports:Dropdown('Zones', {location = flags, flag = 'zones', list = ZoneNames})
-Teleports:Button('Teleport To Zone', function() gethrp().CFrame = TeleportLocations['Zones'][flags['zones']] end)
-Teleports:Dropdown('Rod Locations', {location = flags, flag = 'rodlocations', list = RodNames})
-Teleports:Button('Teleport To Rod', function() gethrp().CFrame = TeleportLocations['Rods'][flags['rodlocations']] end)
------
-Visuals:Section('Rod')
-Visuals:Toggle('Body Rod Chams', {location = flags, flag = 'bodyrodchams'})
-Visuals:Toggle('Rod Chams', {location = flags, flag = 'rodchams'})
-Visuals:Dropdown('Material', {location = flags, flag = 'rodmaterial', list = {'ForceField', 'Neon'}})
-Visuals:Section('Fish Abundance')
-Visuals:Toggle('Free Fish Radar', {location = flags, flag = 'fishabundance'})
 
 --// Loops
 RunService.Heartbeat:Connect(function()
-    -- Update human automation variables with error handling
     pcall(function()
+        -- Update human automation variables
         updateTiredness()
         humanAuto.errorChance = flags['errorrate'] or 2
-    end)
-    
-    -- Handle breaks
-    if humanAuto.breakTime then
-        if humanAuto.breakDuration > 0 then
-            humanAuto.breakDuration = humanAuto.breakDuration - (1/60) -- Approximate frame time
-            return -- Skip all automation during break
-        else
-            humanAuto.breakTime = false
-            humanAuto.sessionStart = tick() -- Reset session
-            humanAuto.castCount = 0
-            humanAuto.reelCount = 0
-            humanAuto.shakeCount = 0
-            humanAuto.tirednessFactor = 1.0
-            pcall(function()
+        
+        -- Handle breaks
+        if humanAuto.breakTime then
+            if humanAuto.breakDuration > 0 then
+                humanAuto.breakDuration = humanAuto.breakDuration - (1/60)
+                return
+            else
+                humanAuto.breakTime = false
+                humanAuto.sessionStart = tick()
+                humanAuto.castCount = 0
+                humanAuto.reelCount = 0
+                humanAuto.shakeCount = 0
+                humanAuto.tirednessFactor = 1.0
                 message('Break ended! Resuming automation...', 3)
-            end)
+            end
         end
-    end
-    
-    -- Auto break system with error handling
-    pcall(function()
+        
+        -- Auto break system
         if shouldTakeBreak() and (flags['humanautocast'] or flags['humanautoshake'] or flags['humanautoreel']) then
             humanAuto.breakTime = true
-            humanAuto.breakDuration = 60 + (math.random() * 120) -- 1-3 minute break
+            humanAuto.breakDuration = 60 + (math.random() * 120)
             message('Taking automatic break for ' .. math.floor(humanAuto.breakDuration) .. ' seconds...', 5)
             return
         end
-    end)
-    
-    -- Autofarm
-    if flags['freezechar'] then
-        if flags['freezecharmode'] == 'Toggled' then
-            if characterposition == nil then
-                characterposition = gethrp().CFrame
-            else
-                gethrp().CFrame = characterposition
+        
+        -- Freeze Character
+        if flags['freezechar'] then
+            if flags['freezecharmode'] == 'Toggled' then
+                if characterposition == nil then
+                    characterposition = gethrp().CFrame
+                else
+                    gethrp().CFrame = characterposition
+                end
+            elseif flags['freezecharmode'] == 'Rod Equipped' then
+                local rod = FindRod()
+                if rod and characterposition == nil then
+                    characterposition = gethrp().CFrame
+                elseif rod and characterposition ~= nil then
+                    gethrp().CFrame = characterposition
+                else
+                    characterposition = nil
+                end
             end
-        elseif flags['freezecharmode'] == 'Rod Equipped' then
-            local rod = FindRod()
-            if rod and characterposition == nil then
-                characterposition = gethrp().CFrame
-            elseif rod and characterposition ~= nil then
-                gethrp().CFrame = characterposition
-            else
-                characterposition = nil
-            end
+        else
+            characterposition = nil
         end
-    else
-        characterposition = nil
-    end
-    
-    -- Human Auto Shake (Priority)
-    if flags['humanautoshake'] and not humanAuto.breakTime then
-        if FindChild(lp.PlayerGui, 'shakeui') and FindChild(lp.PlayerGui['shakeui'], 'safezone') and FindChild(lp.PlayerGui['shakeui']['safezone'], 'button') then
-            local currentTime = tick()
-            local shakeDelay = getPatternDelay('shakeDelays')
-            
-            if currentTime - humanAuto.lastShake >= shakeDelay then
-                -- Simulate human error occasionally
-                if not simulateHumanError() then
-                    -- Random reaction time without blocking
-                    task.spawn(function()
-                        task.wait(getRandomDelay(0.1, 0.5))
-                        GuiService.SelectedObject = lp.PlayerGui['shakeui']['safezone']['button']
-                        if GuiService.SelectedObject == lp.PlayerGui['shakeui']['safezone']['button'] then
-                            game:GetService('VirtualInputManager'):SendKeyEvent(true, Enum.KeyCode.Return, false, game)
-                            game:GetService('VirtualInputManager'):SendKeyEvent(false, Enum.KeyCode.Return, false, game)
-                        end
-                    end)
+        
+        -- Human Auto Shake
+        if flags['humanautoshake'] and not humanAuto.breakTime then
+            if FindChild(lp.PlayerGui, 'shakeui') and FindChild(lp.PlayerGui['shakeui'], 'safezone') and FindChild(lp.PlayerGui['shakeui']['safezone'], 'button') then
+                local currentTime = tick()
+                local shakeDelay = getPatternDelay('shakeDelays')
+                
+                if currentTime - humanAuto.lastShake >= shakeDelay then
+                    if not simulateHumanError() then
+                        task.spawn(function()
+                            task.wait(getRandomDelay(0.1, 0.5))
+                            GuiService.SelectedObject = lp.PlayerGui['shakeui']['safezone']['button']
+                            if GuiService.SelectedObject == lp.PlayerGui['shakeui']['safezone']['button'] then
+                                game:GetService('VirtualInputManager'):SendKeyEvent(true, Enum.KeyCode.Return, false, game)
+                                game:GetService('VirtualInputManager'):SendKeyEvent(false, Enum.KeyCode.Return, false, game)
+                            end
+                        end)
+                    end
                     humanAuto.lastShake = currentTime
                     humanAuto.shakeCount = humanAuto.shakeCount + 1
-                else
-                    -- Simulate missing the shake (human error)
-                    humanAuto.lastShake = currentTime
                 end
             end
         end
-    end
-    
-    -- Regular Auto Shake (Instant)
-    if flags['autoshake'] and not flags['humanautoshake'] then
-        if FindChild(lp.PlayerGui, 'shakeui') and FindChild(lp.PlayerGui['shakeui'], 'safezone') and FindChild(lp.PlayerGui['shakeui']['safezone'], 'button') then
-            GuiService.SelectedObject = lp.PlayerGui['shakeui']['safezone']['button']
-            if GuiService.SelectedObject == lp.PlayerGui['shakeui']['safezone']['button'] then
-                game:GetService('VirtualInputManager'):SendKeyEvent(true, Enum.KeyCode.Return, false, game)
-                game:GetService('VirtualInputManager'):SendKeyEvent(false, Enum.KeyCode.Return, false, game)
+        
+        -- Regular Auto Shake
+        if flags['autoshake'] and not flags['humanautoshake'] then
+            if FindChild(lp.PlayerGui, 'shakeui') and FindChild(lp.PlayerGui['shakeui'], 'safezone') and FindChild(lp.PlayerGui['shakeui']['safezone'], 'button') then
+                GuiService.SelectedObject = lp.PlayerGui['shakeui']['safezone']['button']
+                if GuiService.SelectedObject == lp.PlayerGui['shakeui']['safezone']['button'] then
+                    game:GetService('VirtualInputManager'):SendKeyEvent(true, Enum.KeyCode.Return, false, game)
+                    game:GetService('VirtualInputManager'):SendKeyEvent(false, Enum.KeyCode.Return, false, game)
+                end
             end
         end
-    end
-    
-    -- Human Auto Cast
-    if flags['humanautocast'] and not humanAuto.breakTime then
-        local rod = FindRod()
-        if rod ~= nil and rod['values']['lure'].Value <= .001 then
-            local currentTime = tick()
-            local castDelay = getPatternDelay('castDelays') * (flags['basedelay'] or 2.5) / 2.5
-            
-            if currentTime - humanAuto.lastCast >= castDelay then
-                -- Random cast power (85-100 for realism)
-                local castPower = 85 + (math.random() * 15)
+        
+        -- Human Auto Cast
+        if flags['humanautocast'] and not humanAuto.breakTime then
+            local rod = FindRod()
+            if rod ~= nil and rod['values']['lure'].Value <= .001 then
+                local currentTime = tick()
+                local castDelay = getPatternDelay('castDelays') * (flags['basedelay'] or 2.5) / 2.5
                 
-                -- Simulate thinking/preparation time without blocking
-                task.spawn(function()
-                    task.wait(getRandomDelay(0.2, 0.8))
-                    if not simulateHumanError() then
-                        rod.events.cast:FireServer(castPower, 1)
-                    else
-                        -- Human error: cast with low power or miss
-                        rod.events.cast:FireServer(math.random(20, 60), 1)
-                    end
-                end)
-                humanAuto.lastCast = currentTime
-                humanAuto.castCount = humanAuto.castCount + 1
-            end
-        end
-    end
-    
-    -- Regular Auto Cast
-    if flags['autocast'] and not flags['humanautocast'] then
-        local rod = FindRod()
-        if rod ~= nil and rod['values']['lure'].Value <= .001 then
-            task.spawn(function()
-                task.wait(.5)
-                rod.events.cast:FireServer(100, 1)
-            end)
-        end
-    end
-    
-    -- Human Auto Reel
-    if flags['humanautoreel'] and not humanAuto.breakTime then
-        local rod = FindRod()
-        if rod ~= nil and rod['values']['lure'].Value == 100 then
-            local currentTime = tick()
-            local reelDelay = getPatternDelay('reelDelays')
-            
-            if currentTime - humanAuto.lastReel >= reelDelay then
-                -- Random reel power (90-100 for good catch rate)
-                local reelPower = 90 + (math.random() * 10)
-                
-                -- Simulate reaction time without blocking
-                task.spawn(function()
-                    task.wait(getRandomDelay(0.3, 0.7))
-                    if not simulateHumanError() then
-                        ReplicatedStorage.events.reelfinished:FireServer(reelPower, true)
-                    else
-                        -- Human error: reel with lower power
-                        ReplicatedStorage.events.reelfinished:FireServer(math.random(60, 85), true)
-                    end
-                end)
-                humanAuto.lastReel = currentTime
-                humanAuto.reelCount = humanAuto.reelCount + 1
-            end
-        end
-    end
-    
-    -- Regular Auto Reel
-    if flags['autoreel'] and not flags['humanautoreel'] then
-        local rod = FindRod()
-        if rod ~= nil and rod['values']['lure'].Value == 100 then
-            task.spawn(function()
-                task.wait(.5)
-                ReplicatedStorage.events.reelfinished:FireServer(100, true)
-            end)
-        end
-    end
-        end
-    end
-
-    -- Visuals
-    if flags['rodchams'] then
-        local rod = FindRod()
-        if rod ~= nil and FindChild(rod, 'Details') then
-            local rodName = tostring(rod)
-            if not RodColors[rodName] then
-                RodColors[rodName] = {}
-                RodMaterials[rodName] = {}
-            end
-            for i,v in rod['Details']:GetDescendants() do
-                if v:IsA('BasePart') or v:IsA('MeshPart') then
-                    if v.Color ~= Color3.fromRGB(100, 100, 255) then
-                        RodColors[rodName][v.Name..i] = v.Color
-                    end
-                    if RodMaterials[rodName][v.Name..i] == nil then
-                        if v.Material == Enum.Material.Neon then
-                            RodMaterials[rodName][v.Name..i] = Enum.Material.Neon
-                        elseif v.Material ~= Enum.Material.ForceField and v.Material ~= Enum.Material[flags['rodmaterial']] then
-                            RodMaterials[rodName][v.Name..i] = v.Material
+                if currentTime - humanAuto.lastCast >= castDelay then
+                    local castPower = 85 + (math.random() * 15)
+                    task.spawn(function()
+                        task.wait(getRandomDelay(0.2, 0.8))
+                        if not simulateHumanError() then
+                            rod.events.cast:FireServer(castPower, 1)
+                        else
+                            rod.events.cast:FireServer(math.random(20, 60), 1)
                         end
-                    end
-                    v.Material = Enum.Material[flags['rodmaterial']]
-                    v.Color = Color3.fromRGB(100, 100, 255)
+                    end)
+                    humanAuto.lastCast = currentTime
+                    humanAuto.castCount = humanAuto.castCount + 1
                 end
             end
-            if rod['handle'].Color ~= Color3.fromRGB(100, 100, 255) then
-                RodColors[rodName]['handle'] = rod['handle'].Color
-            end
-            if rod['handle'].Material ~= Enum.Material.ForceField and rod['handle'].Material ~= Enum.Material.Neon and rod['handle'].Material ~= Enum.Material[flags['rodmaterial']] then
-                RodMaterials[rodName]['handle'] = rod['handle'].Material
-            end
-            rod['handle'].Material = Enum.Material[flags['rodmaterial']]
-            rod['handle'].Color = Color3.fromRGB(100, 100, 255)
         end
-    elseif not flags['rodchams'] then
-        local rod = FindRod()
-        if rod ~= nil and FindChild(rod, 'Details') then
-            local rodName = tostring(rod)
-            if RodColors[rodName] and RodMaterials[rodName] then
+        
+        -- Regular Auto Cast
+        if flags['autocast'] and not flags['humanautocast'] then
+            local rod = FindRod()
+            if rod ~= nil and rod['values']['lure'].Value <= .001 then
+                task.spawn(function()
+                    task.wait(.5)
+                    rod.events.cast:FireServer(100, 1)
+                end)
+            end
+        end
+        
+        -- Human Auto Reel
+        if flags['humanautoreel'] and not humanAuto.breakTime then
+            local rod = FindRod()
+            if rod ~= nil and rod['values']['lure'].Value == 100 then
+                local currentTime = tick()
+                local reelDelay = getPatternDelay('reelDelays')
+                
+                if currentTime - humanAuto.lastReel >= reelDelay then
+                    local reelPower = 90 + (math.random() * 10)
+                    task.spawn(function()
+                        task.wait(getRandomDelay(0.3, 0.7))
+                        if not simulateHumanError() then
+                            ReplicatedStorage.events.reelfinished:FireServer(reelPower, true)
+                        else
+                            ReplicatedStorage.events.reelfinished:FireServer(math.random(60, 85), true)
+                        end
+                    end)
+                    humanAuto.lastReel = currentTime
+                    humanAuto.reelCount = humanAuto.reelCount + 1
+                end
+            end
+        end
+        
+        -- Regular Auto Reel
+        if flags['autoreel'] and not flags['humanautoreel'] then
+            local rod = FindRod()
+            if rod ~= nil and rod['values']['lure'].Value == 100 then
+                task.spawn(function()
+                    task.wait(.5)
+                    ReplicatedStorage.events.reelfinished:FireServer(100, true)
+                end)
+            end
+        end
+        
+        -- Visuals
+        if flags['rodchams'] then
+            local rod = FindRod()
+            if rod ~= nil and FindChild(rod, 'Details') then
+                local rodName = tostring(rod)
+                if not RodColors[rodName] then
+                    RodColors[rodName] = {}
+                    RodMaterials[rodName] = {}
+                end
                 for i,v in rod['Details']:GetDescendants() do
                     if v:IsA('BasePart') or v:IsA('MeshPart') then
-                        if RodMaterials[rodName][v.Name..i] and RodColors[rodName][v.Name..i] then
-                            v.Material = RodMaterials[rodName][v.Name..i]
-                            v.Color = RodColors[rodName][v.Name..i]
+                        if v.Color ~= Color3.fromRGB(100, 100, 255) then
+                            RodColors[rodName][v.Name..i] = v.Color
                         end
+                        if RodMaterials[rodName][v.Name..i] == nil then
+                            if v.Material == Enum.Material.Neon then
+                                RodMaterials[rodName][v.Name..i] = Enum.Material.Neon
+                            elseif v.Material ~= Enum.Material.ForceField and v.Material ~= Enum.Material[flags['rodmaterial']] then
+                                RodMaterials[rodName][v.Name..i] = v.Material
+                            end
+                        end
+                        v.Material = Enum.Material[flags['rodmaterial']]
+                        v.Color = Color3.fromRGB(100, 100, 255)
                     end
                 end
-                if RodMaterials[rodName]['handle'] and RodColors[rodName]['handle'] then
-                    rod['handle'].Material = RodMaterials[rodName]['handle']
-                    rod['handle'].Color = RodColors[rodName]['handle']
+                if rod['handle'].Color ~= Color3.fromRGB(100, 100, 255) then
+                    RodColors[rodName]['handle'] = rod['handle'].Color
+                end
+                if rod['handle'].Material ~= Enum.Material.ForceField and rod['handle'].Material ~= Enum.Material.Neon and rod['handle'].Material ~= Enum.Material[flags['rodmaterial']] then
+                    RodMaterials[rodName]['handle'] = rod['handle'].Material
+                end
+                rod['handle'].Material = Enum.Material[flags['rodmaterial']]
+                rod['handle'].Color = Color3.fromRGB(100, 100, 255)
+            end
+        elseif not flags['rodchams'] then
+            local rod = FindRod()
+            if rod ~= nil and FindChild(rod, 'Details') then
+                local rodName = tostring(rod)
+                if RodColors[rodName] and RodMaterials[rodName] then
+                    for i,v in rod['Details']:GetDescendants() do
+                        if v:IsA('BasePart') or v:IsA('MeshPart') then
+                            if RodMaterials[rodName][v.Name..i] and RodColors[rodName][v.Name..i] then
+                                v.Material = RodMaterials[rodName][v.Name..i]
+                                v.Color = RodColors[rodName][v.Name..i]
+                            end
+                        end
+                    end
+                    if RodMaterials[rodName]['handle'] and RodColors[rodName]['handle'] then
+                        rod['handle'].Material = RodMaterials[rodName]['handle']
+                        rod['handle'].Color = RodColors[rodName]['handle']
+                    end
                 end
             end
         end
-    end
-    if flags['bodyrodchams'] then
-        local rod = getchar():FindFirstChild('RodBodyModel')
-        if rod ~= nil and FindChild(rod, 'Details') then
-            local rodName = tostring(rod)
-            if not RodColors[rodName] then
-                RodColors[rodName] = {}
-                RodMaterials[rodName] = {}
-            end
-            for i,v in rod['Details']:GetDescendants() do
-                if v:IsA('BasePart') or v:IsA('MeshPart') then
-                    if v.Color ~= Color3.fromRGB(100, 100, 255) then
-                        RodColors[rodName][v.Name..i] = v.Color
-                    end
-                    if RodMaterials[rodName][v.Name..i] == nil then
-                        if v.Material == Enum.Material.Neon then
-                            RodMaterials[rodName][v.Name..i] = Enum.Material.Neon
-                        elseif v.Material ~= Enum.Material.ForceField and v.Material ~= Enum.Material[flags['rodmaterial']] then
-                            RodMaterials[rodName][v.Name..i] = v.Material
-                        end
-                    end
-                    v.Material = Enum.Material[flags['rodmaterial']]
-                    v.Color = Color3.fromRGB(100, 100, 255)
+        
+        if flags['bodyrodchams'] then
+            local rod = getchar():FindFirstChild('RodBodyModel')
+            if rod ~= nil and FindChild(rod, 'Details') then
+                local rodName = tostring(rod)
+                if not RodColors[rodName] then
+                    RodColors[rodName] = {}
+                    RodMaterials[rodName] = {}
                 end
-            end
-            if rod['handle'].Color ~= Color3.fromRGB(100, 100, 255) then
-                RodColors[rodName]['handle'] = rod['handle'].Color
-            end
-            if rod['handle'].Material ~= Enum.Material.ForceField and rod['handle'].Material ~= Enum.Material.Neon and rod['handle'].Material ~= Enum.Material[flags['rodmaterial']] then
-                RodMaterials[rodName]['handle'] = rod['handle'].Material
-            end
-            rod['handle'].Material = Enum.Material[flags['rodmaterial']]
-            rod['handle'].Color = Color3.fromRGB(100, 100, 255)
-        end
-    elseif not flags['bodyrodchams'] then
-        local rod = getchar():FindFirstChild('RodBodyModel')
-        if rod ~= nil and FindChild(rod, 'Details') then
-            local rodName = tostring(rod)
-            if RodColors[rodName] and RodMaterials[rodName] then
                 for i,v in rod['Details']:GetDescendants() do
                     if v:IsA('BasePart') or v:IsA('MeshPart') then
-                        if RodMaterials[rodName][v.Name..i] and RodColors[rodName][v.Name..i] then
-                            v.Material = RodMaterials[rodName][v.Name..i]
-                            v.Color = RodColors[rodName][v.Name..i]
+                        if v.Color ~= Color3.fromRGB(100, 100, 255) then
+                            RodColors[rodName][v.Name..i] = v.Color
+                        end
+                        if RodMaterials[rodName][v.Name..i] == nil then
+                            if v.Material == Enum.Material.Neon then
+                                RodMaterials[rodName][v.Name..i] = Enum.Material.Neon
+                            elseif v.Material ~= Enum.Material.ForceField and v.Material ~= Enum.Material[flags['rodmaterial']] then
+                                RodMaterials[rodName][v.Name..i] = v.Material
+                            end
+                        end
+                        v.Material = Enum.Material[flags['rodmaterial']]
+                        v.Color = Color3.fromRGB(100, 100, 255)
+                    end
+                end
+                if rod['handle'].Color ~= Color3.fromRGB(100, 100, 255) then
+                    RodColors[rodName]['handle'] = rod['handle'].Color
+                end
+                if rod['handle'].Material ~= Enum.Material.ForceField and rod['handle'].Material ~= Enum.Material.Neon and rod['handle'].Material ~= Enum.Material[flags['rodmaterial']] then
+                    RodMaterials[rodName]['handle'] = rod['handle'].Material
+                end
+                rod['handle'].Material = Enum.Material[flags['rodmaterial']]
+                rod['handle'].Color = Color3.fromRGB(100, 100, 255)
+            end
+        elseif not flags['bodyrodchams'] then
+            local rod = getchar():FindFirstChild('RodBodyModel')
+            if rod ~= nil and FindChild(rod, 'Details') then
+                local rodName = tostring(rod)
+                if RodColors[rodName] and RodMaterials[rodName] then
+                    for i,v in rod['Details']:GetDescendants() do
+                        if v:IsA('BasePart') or v:IsA('MeshPart') then
+                            if RodMaterials[rodName][v.Name..i] and RodColors[rodName][v.Name..i] then
+                                v.Material = RodMaterials[rodName][v.Name..i]
+                                v.Color = RodColors[rodName][v.Name..i]
+                            end
                         end
                     end
-                end
-                if RodMaterials[rodName]['handle'] and RodColors[rodName]['handle'] then
-                    rod['handle'].Material = RodMaterials[rodName]['handle']
-                    rod['handle'].Color = RodColors[rodName]['handle']
-                end
-            end
-        end
-    end
-    if flags['fishabundance'] then
-        if not fishabundancevisible then
-            message('\<b><font color = \"#9eff80\">Fish Abundance Zones</font></b>\ are now visible', 5)
-        end
-        for i,v in workspace.zones.fishing:GetChildren() do
-            if FindChildOfType(v, 'Abundance', 'StringValue') and FindChildOfType(v, 'radar1', 'BillboardGui') then
-                v['radar1'].Enabled = true
-                v['radar2'].Enabled = true
-            end
-        end
-        fishabundancevisible = flags['fishabundance']
-    else
-        if fishabundancevisible then
-            message('\<b><font color = \"#9eff80\">Fish Abundance Zones</font></b>\ are no longer visible', 5)
-        end
-        for i,v in workspace.zones.fishing:GetChildren() do
-            if FindChildOfType(v, 'Abundance', 'StringValue') and FindChildOfType(v, 'radar1', 'BillboardGui') then
-                v['radar1'].Enabled = false
-                v['radar2'].Enabled = false
-            end
-        end
-        fishabundancevisible = flags['fishabundance']
-    end
-
-    -- Modifications
-    if flags['infoxygen'] then
-        if not deathcon then
-            deathcon = gethum().Died:Connect(function()
-                task.delay(9, function()
-                    if FindChildOfType(getchar(), 'DivingTank', 'Decal') then
-                        FindChildOfType(getchar(), 'DivingTank', 'Decal'):Destroy()
+                    if RodMaterials[rodName]['handle'] and RodColors[rodName]['handle'] then
+                        rod['handle'].Material = RodMaterials[rodName]['handle']
+                        rod['handle'].Color = RodColors[rodName]['handle']
                     end
+                end
+            end
+        end
+        
+        if flags['fishabundance'] then
+            if not fishabundancevisible then
+                message('Fish Abundance Zones are now visible', 5)
+            end
+            for i,v in workspace.zones.fishing:GetChildren() do
+                if FindChildOfType(v, 'Abundance', 'StringValue') and FindChildOfType(v, 'radar1', 'BillboardGui') then
+                    v['radar1'].Enabled = true
+                    v['radar2'].Enabled = true
+                end
+            end
+            fishabundancevisible = flags['fishabundance']
+        else
+            if fishabundancevisible then
+                message('Fish Abundance Zones are no longer visible', 5)
+            end
+            for i,v in workspace.zones.fishing:GetChildren() do
+                if FindChildOfType(v, 'Abundance', 'StringValue') and FindChildOfType(v, 'radar1', 'BillboardGui') then
+                    v['radar1'].Enabled = false
+                    v['radar2'].Enabled = false
+                end
+            end
+            fishabundancevisible = flags['fishabundance']
+        end
+
+        -- Modifications
+        if flags['infoxygen'] then
+            if not deathcon then
+                deathcon = gethum().Died:Connect(function()
+                    task.delay(9, function()
+                        if FindChildOfType(getchar(), 'DivingTank', 'Decal') then
+                            FindChildOfType(getchar(), 'DivingTank', 'Decal'):Destroy()
+                        end
+                        local oxygentank = Instance.new('Decal')
+                        oxygentank.Name = 'DivingTank'
+                        oxygentank.Parent = workspace
+                        oxygentank:SetAttribute('Tier', 1/0)
+                        oxygentank.Parent = getchar()
+                        deathcon = nil
+                    end)
+                end)
+            end
+            if deathcon and gethum().Health > 0 then
+                if not getchar():FindFirstChild('DivingTank') then
                     local oxygentank = Instance.new('Decal')
                     oxygentank.Name = 'DivingTank'
                     oxygentank.Parent = workspace
                     oxygentank:SetAttribute('Tier', 1/0)
                     oxygentank.Parent = getchar()
-                    deathcon = nil
-                end)
-            end)
-        end
-        if deathcon and gethum().Health > 0 then
-            if not getchar():FindFirstChild('DivingTank') then
-                local oxygentank = Instance.new('Decal')
-                oxygentank.Name = 'DivingTank'
-                oxygentank.Parent = workspace
-                oxygentank:SetAttribute('Tier', 1/0)
-                oxygentank.Parent = getchar()
+                end
+            end
+        else
+            if FindChildOfType(getchar(), 'DivingTank', 'Decal') then
+                FindChildOfType(getchar(), 'DivingTank', 'Decal'):Destroy()
             end
         end
-    else
-        if FindChildOfType(getchar(), 'DivingTank', 'Decal') then
-            FindChildOfType(getchar(), 'DivingTank', 'Decal'):Destroy()
+        
+        if flags['nopeakssystems'] then
+            getchar():SetAttribute('WinterCloakEquipped', true)
+            getchar():SetAttribute('Refill', true)
+        else
+            getchar():SetAttribute('WinterCloakEquipped', nil)
+            getchar():SetAttribute('Refill', false)
         end
-    end
-    if flags['nopeakssystems'] then
-        getchar():SetAttribute('WinterCloakEquipped', true)
-        getchar():SetAttribute('Refill', true)
-    else
-        getchar():SetAttribute('WinterCloakEquipped', nil)
-        getchar():SetAttribute('Refill', false)
-    end
+    end)
 end)
 
 --// Hooks
