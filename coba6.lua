@@ -65,6 +65,7 @@ local castStats = {
     totalShakes = 0,
     avgCastPower = 0,
     avgReelPower = 0,
+    avgShakeDelay = 0,
     successfulReels = 0,
     lastStatsUpdate = tick()
 }
@@ -338,6 +339,20 @@ Automation:Section('Shake Settings')
 Automation:Toggle('Auto Shake', {location = flags, flag = 'autoshake'})
 Automation:Toggle('Random Shake Timing', {location = flags, flag = 'randomshake', default = false})
 Automation:Slider('Shake Range (ms)', {location = flags, flag = 'shakedelayrange', min = 0, max = 500, default = 150})
+Automation:Button('Reset Shake Settings', function()
+    flags['randomshake'] = false
+    flags['shakedelayrange'] = 150
+    message("Shake settings reset to default", 2)
+end)
+Automation:Button('Test Shake Function', function()
+    pcall(function()
+        if FindChild(lp.PlayerGui, 'shakeui') and FindChild(lp.PlayerGui['shakeui'], 'safezone') and FindChild(lp.PlayerGui['shakeui']['safezone'], 'button') then
+            message("Shake UI detected - Test successful", 2)
+        else
+            message("No shake UI found", 2)
+        end
+    end)
+end)
 Automation:Section('Reel Settings')
 Automation:Toggle('Auto Reel', {location = flags, flag = 'autoreel'})
 Automation:Slider('Reel Delay (s)', {location = flags, flag = 'autoreeldelay', min = 0.1, max = 5, default = 0.5})
@@ -454,26 +469,48 @@ RunService.Heartbeat:Connect(function()
         if flags['autoshake'] then
             pcall(function()
                 if FindChild(lp.PlayerGui, 'shakeui') and FindChild(lp.PlayerGui['shakeui'], 'safezone') and FindChild(lp.PlayerGui['shakeui']['safezone'], 'button') then
+                    local randomDelayMs = 0 -- Initialize delay variable
+                    
                     -- Random shake timing if enabled
-                    if flags['randomshake'] then
-                        local maxDelay = (flags['shakedelayrange'] or 150) / 1000 -- Convert ms to seconds
-                        local randomDelay = math.random(0, maxDelay * 1000) / 1000 -- Random delay up to max
-                        task.wait(randomDelay)
-                        print("[DEBUG] Auto Shake: " .. (randomDelay * 1000) .. "ms delay")
+                    if flags['randomshake'] and flags['shakedelayrange'] then
+                        local maxDelayMs = tonumber(flags['shakedelayrange']) or 150
+                        randomDelayMs = math.random(0, maxDelayMs)
+                        local randomDelaySec = randomDelayMs / 1000
+                        task.wait(randomDelaySec)
+                        
+                        if flags['showcaststats'] then
+                            print("[DEBUG] Auto Shake: " .. randomDelayMs .. "ms delay")
+                        end
                     elseif flags['stealthmode'] then
                         -- Human-like delay before shaking
                         task.wait(randomDelay(0.1, 0.3))
                         
                         -- Sometimes miss the perfect timing (human behavior)
-                        if flags['humanbehavior'] > 0 and math.random(1, 100) <= flags['humanbehavior'] then
+                        if flags['humanbehavior'] and flags['humanbehavior'] > 0 and math.random(1, 100) <= flags['humanbehavior'] then
                             task.wait(randomDelay(0.05, 0.15))
                         end
                     end
                     
-                    GuiService.SelectedObject = lp.PlayerGui['shakeui']['safezone']['button']
-                    if GuiService.SelectedObject == lp.PlayerGui['shakeui']['safezone']['button'] then
-                        game:GetService('VirtualInputManager'):SendKeyEvent(true, Enum.KeyCode.Return, false, game)
-                        game:GetService('VirtualInputManager'):SendKeyEvent(false, Enum.KeyCode.Return, false, game)
+                    -- Safe shake execution with fallback
+                    local shakeSuccess = pcall(function()
+                        GuiService.SelectedObject = lp.PlayerGui['shakeui']['safezone']['button']
+                        if GuiService.SelectedObject == lp.PlayerGui['shakeui']['safezone']['button'] then
+                            game:GetService('VirtualInputManager'):SendKeyEvent(true, Enum.KeyCode.Return, false, game)
+                            game:GetService('VirtualInputManager'):SendKeyEvent(false, Enum.KeyCode.Return, false, game)
+                        end
+                    end)
+                    
+                    -- Update shake statistics only if shake was successful
+                    if shakeSuccess and flags['showcaststats'] then
+                        castStats.totalShakes = castStats.totalShakes + 1
+                        if flags['randomshake'] then
+                            castStats.avgShakeDelay = ((castStats.avgShakeDelay * (castStats.totalShakes - 1)) + randomDelayMs) / castStats.totalShakes
+                            print("[STATS] Shake #" .. castStats.totalShakes .. " | Delay: " .. randomDelayMs .. "ms | Avg: " .. math.floor(castStats.avgShakeDelay) .. "ms")
+                        else
+                            print("[STATS] Shake #" .. castStats.totalShakes .. " | Instant shake")
+                        end
+                    elseif not shakeSuccess then
+                        print("[ERROR] Auto Shake failed - retrying next cycle")
                     end
                 end
             end)
