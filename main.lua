@@ -111,14 +111,14 @@ message = function(text, time)
 end
 
 --// Human-like Automation Functions
-local function getRandomDelay(baseDelay, variance)
+getRandomDelay = function(baseDelay, variance)
     variance = variance or 0.3
     local min = baseDelay * (1 - variance)
     local max = baseDelay * (1 + variance)
     return min + (math.random() * (max - min))
 end
 
-local function shouldTakeBreak()
+shouldTakeBreak = function()
     local sessionTime = tick() - humanAuto.sessionStart
     local actionCount = humanAuto.castCount + humanAuto.reelCount + humanAuto.shakeCount
     
@@ -129,11 +129,11 @@ local function shouldTakeBreak()
     return false
 end
 
-local function simulateHumanError()
+simulateHumanError = function()
     return math.random(1, 100) <= humanAuto.errorChance
 end
 
-local function updateTiredness()
+updateTiredness = function()
     local sessionTime = tick() - humanAuto.sessionStart
     -- Gradual slowdown after 30 minutes
     if sessionTime > 30 * 60 then
@@ -141,7 +141,7 @@ local function updateTiredness()
     end
 end
 
-local function getPatternDelay(actionType)
+getPatternDelay = function(actionType)
     local patterns = humanAuto.patterns[actionType]
     if patterns then
         local delay = patterns[humanAuto.currentPattern]
@@ -211,9 +211,11 @@ Visuals:Toggle('Free Fish Radar', {location = flags, flag = 'fishabundance'})
 
 --// Loops
 RunService.Heartbeat:Connect(function()
-    -- Update human automation variables
-    updateTiredness()
-    humanAuto.errorChance = flags['errorrate'] or 2
+    -- Update human automation variables with error handling
+    pcall(function()
+        updateTiredness()
+        humanAuto.errorChance = flags['errorrate'] or 2
+    end)
     
     -- Handle breaks
     if humanAuto.breakTime then
@@ -227,17 +229,21 @@ RunService.Heartbeat:Connect(function()
             humanAuto.reelCount = 0
             humanAuto.shakeCount = 0
             humanAuto.tirednessFactor = 1.0
-            message('Break ended! Resuming automation...', 3)
+            pcall(function()
+                message('Break ended! Resuming automation...', 3)
+            end)
         end
     end
     
-    -- Auto break system
-    if shouldTakeBreak() and (flags['humanautocast'] or flags['humanautoshake'] or flags['humanautoreel']) then
-        humanAuto.breakTime = true
-        humanAuto.breakDuration = 60 + (math.random() * 120) -- 1-3 minute break
-        message('Taking automatic break for ' .. math.floor(humanAuto.breakDuration) .. ' seconds...', 5)
-        return
-    end
+    -- Auto break system with error handling
+    pcall(function()
+        if shouldTakeBreak() and (flags['humanautocast'] or flags['humanautoshake'] or flags['humanautoreel']) then
+            humanAuto.breakTime = true
+            humanAuto.breakDuration = 60 + (math.random() * 120) -- 1-3 minute break
+            message('Taking automatic break for ' .. math.floor(humanAuto.breakDuration) .. ' seconds...', 5)
+            return
+        end
+    end)
     
     -- Autofarm
     if flags['freezechar'] then
@@ -270,18 +276,20 @@ RunService.Heartbeat:Connect(function()
             if currentTime - humanAuto.lastShake >= shakeDelay then
                 -- Simulate human error occasionally
                 if not simulateHumanError() then
-                    task.wait(getRandomDelay(0.1, 0.5)) -- Random reaction time
-                    GuiService.SelectedObject = lp.PlayerGui['shakeui']['safezone']['button']
-                    if GuiService.SelectedObject == lp.PlayerGui['shakeui']['safezone']['button'] then
-                        game:GetService('VirtualInputManager'):SendKeyEvent(true, Enum.KeyCode.Return, false, game)
-                        game:GetService('VirtualInputManager'):SendKeyEvent(false, Enum.KeyCode.Return, false, game)
-                        humanAuto.lastShake = currentTime
-                        humanAuto.shakeCount = humanAuto.shakeCount + 1
-                    end
+                    -- Random reaction time without blocking
+                    task.spawn(function()
+                        task.wait(getRandomDelay(0.1, 0.5))
+                        GuiService.SelectedObject = lp.PlayerGui['shakeui']['safezone']['button']
+                        if GuiService.SelectedObject == lp.PlayerGui['shakeui']['safezone']['button'] then
+                            game:GetService('VirtualInputManager'):SendKeyEvent(true, Enum.KeyCode.Return, false, game)
+                            game:GetService('VirtualInputManager'):SendKeyEvent(false, Enum.KeyCode.Return, false, game)
+                        end
+                    end)
+                    humanAuto.lastShake = currentTime
+                    humanAuto.shakeCount = humanAuto.shakeCount + 1
                 else
                     -- Simulate missing the shake (human error)
                     humanAuto.lastShake = currentTime
-                    task.wait(getRandomDelay(0.5, 1.0)) -- Delay before trying again
                 end
             end
         end
@@ -309,18 +317,18 @@ RunService.Heartbeat:Connect(function()
                 -- Random cast power (85-100 for realism)
                 local castPower = 85 + (math.random() * 15)
                 
-                -- Simulate thinking/preparation time
-                task.wait(getRandomDelay(0.2, 0.8))
-                
-                if not simulateHumanError() then
-                    rod.events.cast:FireServer(castPower, 1)
-                    humanAuto.lastCast = currentTime
-                    humanAuto.castCount = humanAuto.castCount + 1
-                else
-                    -- Human error: cast with low power or miss
-                    rod.events.cast:FireServer(math.random(20, 60), 1)
-                    humanAuto.lastCast = currentTime
-                end
+                -- Simulate thinking/preparation time without blocking
+                task.spawn(function()
+                    task.wait(getRandomDelay(0.2, 0.8))
+                    if not simulateHumanError() then
+                        rod.events.cast:FireServer(castPower, 1)
+                    else
+                        -- Human error: cast with low power or miss
+                        rod.events.cast:FireServer(math.random(20, 60), 1)
+                    end
+                end)
+                humanAuto.lastCast = currentTime
+                humanAuto.castCount = humanAuto.castCount + 1
             end
         end
     end
@@ -328,8 +336,11 @@ RunService.Heartbeat:Connect(function()
     -- Regular Auto Cast
     if flags['autocast'] and not flags['humanautocast'] then
         local rod = FindRod()
-        if rod ~= nil and rod['values']['lure'].Value <= .001 and task.wait(.5) then
-            rod.events.cast:FireServer(100, 1)
+        if rod ~= nil and rod['values']['lure'].Value <= .001 then
+            task.spawn(function()
+                task.wait(.5)
+                rod.events.cast:FireServer(100, 1)
+            end)
         end
     end
     
@@ -344,18 +355,18 @@ RunService.Heartbeat:Connect(function()
                 -- Random reel power (90-100 for good catch rate)
                 local reelPower = 90 + (math.random() * 10)
                 
-                -- Simulate reaction time
-                task.wait(getRandomDelay(0.3, 0.7))
-                
-                if not simulateHumanError() then
-                    ReplicatedStorage.events.reelfinished:FireServer(reelPower, true)
-                    humanAuto.lastReel = currentTime
-                    humanAuto.reelCount = humanAuto.reelCount + 1
-                else
-                    -- Human error: reel with lower power
-                    ReplicatedStorage.events.reelfinished:FireServer(math.random(60, 85), true)
-                    humanAuto.lastReel = currentTime
-                end
+                -- Simulate reaction time without blocking
+                task.spawn(function()
+                    task.wait(getRandomDelay(0.3, 0.7))
+                    if not simulateHumanError() then
+                        ReplicatedStorage.events.reelfinished:FireServer(reelPower, true)
+                    else
+                        -- Human error: reel with lower power
+                        ReplicatedStorage.events.reelfinished:FireServer(math.random(60, 85), true)
+                    end
+                end)
+                humanAuto.lastReel = currentTime
+                humanAuto.reelCount = humanAuto.reelCount + 1
             end
         end
     end
@@ -363,8 +374,11 @@ RunService.Heartbeat:Connect(function()
     -- Regular Auto Reel
     if flags['autoreel'] and not flags['humanautoreel'] then
         local rod = FindRod()
-        if rod ~= nil and rod['values']['lure'].Value == 100 and task.wait(.5) then
-            ReplicatedStorage.events.reelfinished:FireServer(100, true)
+        if rod ~= nil and rod['values']['lure'].Value == 100 then
+            task.spawn(function()
+                task.wait(.5)
+                ReplicatedStorage.events.reelfinished:FireServer(100, true)
+            end)
         end
     end
         end
