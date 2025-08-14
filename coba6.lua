@@ -338,13 +338,57 @@ Automation:Slider('Max Cast %', {location = flags, flag = 'maxcastpower', min = 
 Automation:Section('Shake Settings')
 Automation:Toggle('Auto Shake', {location = flags, flag = 'autoshake'})
 Automation:Toggle('Random Shake Timing', {location = flags, flag = 'randomshake', default = false})
-Automation:Slider('Shake Range (ms)', {location = flags, flag = 'shakedelayrange', min = 0, max = 1000, default = 150})
-Automation:Slider('Min Shake Delay (ms)', {location = flags, flag = 'minshakedelay', min = 0, max = 500, default = 50})
-Automation:Button('Reset Shake Settings', function()
+
+-- Fixed Shake Range Slider with stable behavior
+local shakeSlider = Automation:Slider('Shake Range (ms)', {
+    location = flags, 
+    flag = 'shakedelayrange', 
+    min = 0, 
+    max = 500, 
+    default = 150,
+    step = 10  -- Add step for more stable sliding
+})
+
+-- Alternative: Button-based shake delay control
+Automation:Button('Shake: 50ms (Fast)', function()
+    flags['shakedelayrange'] = 50
+    message("Shake delay set to 50ms", 1)
+end)
+
+Automation:Button('Shake: 150ms (Normal)', function()
+    flags['shakedelayrange'] = 150
+    message("Shake delay set to 150ms", 1)
+end)
+
+Automation:Button('Shake: 300ms (Safe)', function()
+    flags['shakedelayrange'] = 300
+    message("Shake delay set to 300ms", 1)
+end)
+
+Automation:Button('Reset All Shake Settings', function()
+    flags['autoshake'] = false
     flags['randomshake'] = false
     flags['shakedelayrange'] = 150
-    flags['minshakedelay'] = 50
-    message("Shake settings reset to default", 2)
+    message("All shake settings reset!", 2)
+end)
+
+-- Display current shake setting
+Automation:Button('Show Current Settings', function()
+    local currentDelay = flags['shakedelayrange'] or 150
+    local isRandom = flags['randomshake'] and "ON" or "OFF"
+    local isAutoShake = flags['autoshake'] and "ON" or "OFF"
+    
+    message("Shake: " .. currentDelay .. "ms | Random: " .. isRandom .. " | Auto: " .. isAutoShake, 3)
+end)
+
+-- Emergency slider release function
+Automation:Button('🚨 Fix Stuck Slider', function()
+    pcall(function()
+        -- Force release any mouse input
+        game:GetService('UserInputService').InputEnded:Fire()
+        flags['shakedelayrange'] = 150  -- Reset to safe value
+        message("Slider fixed! Reset to 150ms", 2)
+    end)
 end)
 Automation:Button('Test Shake Function', function()
     pcall(function()
@@ -473,15 +517,26 @@ RunService.Heartbeat:Connect(function()
                 if FindChild(lp.PlayerGui, 'shakeui') and FindChild(lp.PlayerGui['shakeui'], 'safezone') and FindChild(lp.PlayerGui['shakeui']['safezone'], 'button') then
                     local randomDelayMs = 0 -- Initialize delay variable
                     
-                    -- Random shake timing if enabled
+                    -- Random shake timing if enabled with safety validation
                     if flags['randomshake'] and flags['shakedelayrange'] then
                         local maxDelayMs = tonumber(flags['shakedelayrange']) or 150
+                        
+                        -- Safety check: prevent extreme values
+                        if maxDelayMs > 2000 then 
+                            maxDelayMs = 500 
+                            flags['shakedelayrange'] = 500
+                            print("[WARNING] Shake delay too high, reset to 500ms")
+                        elseif maxDelayMs < 0 then
+                            maxDelayMs = 0
+                            flags['shakedelayrange'] = 0
+                        end
+                        
                         randomDelayMs = math.random(0, maxDelayMs)
                         local randomDelaySec = randomDelayMs / 1000
                         task.wait(randomDelaySec)
                         
                         if flags['showcaststats'] then
-                            print("[DEBUG] Auto Shake: " .. randomDelayMs .. "ms delay")
+                            print("[DEBUG] Auto Shake: " .. randomDelayMs .. "ms delay (max: " .. maxDelayMs .. "ms)")
                         end
                     elseif flags['stealthmode'] then
                         -- Human-like delay before shaking
