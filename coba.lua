@@ -95,12 +95,12 @@ if CheckFunc(makefolder) and (CheckFunc(isfolder) and not isfolder('fisch')) the
     makefolder('fisch')
 end
 if CheckFunc(writefile) and (CheckFunc(isfile) and not isfile('fisch/library.lua')) then
-    writefile('fisch/library.lua', game:HttpGet('https://raw.githubusercontent.com/xataxell/fisch/refs/heads/main/library.lua'))
+    writefile('fisch/library.lua', game:HttpGet('https://raw.githubusercontent.com/MELLISAEFFENDY/gamech/refs/heads/main/library.lua'))
 end
 if CheckFunc(loadfile) then
     library = loadfile('fisch/library.lua')()
 else
-    library = loadstring(game:HttpGet('https://raw.githubusercontent.com/xataxell/fisch/refs/heads/main/library.lua'))()
+    library = loadstring(game:HttpGet('https://raw.githubusercontent.com/MELLISAEFFENDY/gamech/refs/heads/main/library.lua'))()
 end
 local Automation = library:CreateWindow('Automation')
 local Modifications = library:CreateWindow('Modifications')
