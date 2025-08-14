@@ -338,10 +338,12 @@ Automation:Slider('Max Cast %', {location = flags, flag = 'maxcastpower', min = 
 Automation:Section('Shake Settings')
 Automation:Toggle('Auto Shake', {location = flags, flag = 'autoshake'})
 Automation:Toggle('Random Shake Timing', {location = flags, flag = 'randomshake', default = false})
-Automation:Slider('Shake Range (ms)', {location = flags, flag = 'shakedelayrange', min = 0, max = 500, default = 150})
+Automation:Slider('Shake Range (ms)', {location = flags, flag = 'shakedelayrange', min = 0, max = 1000, default = 150})
+Automation:Slider('Min Shake Delay (ms)', {location = flags, flag = 'minshakedelay', min = 0, max = 500, default = 50})
 Automation:Button('Reset Shake Settings', function()
     flags['randomshake'] = false
     flags['shakedelayrange'] = 150
+    flags['minshakedelay'] = 50
     message("Shake settings reset to default", 2)
 end)
 Automation:Button('Test Shake Function', function()
