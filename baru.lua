@@ -4,6 +4,18 @@ local ReplicatedStorage = cloneref(game:GetService('ReplicatedStorage'))
 local RunService = cloneref(game:GetService('RunService'))
 local GuiService = cloneref(game:GetService('GuiService'))
 
+-- Quick environment check
+if not game:GetService("CoreGui") then
+    error("CoreGui not accessible - script may not work properly")
+end
+
+if not Players.LocalPlayer then
+    error("LocalPlayer not found - script must be run by a player")
+end
+
+print("[FISHCH] Starting FischCH script...")
+print("[FISHCH] Environment check passed")
+
 --// Variables
 local flags = {}
 local characterposition
@@ -264,22 +276,88 @@ end
 -- Error logging function
 local function logError(err, context)
     print("[FISHCH ERROR] " .. context .. ": " .. tostring(err))
-    message("Script Error: " .. context, 3)
+    -- Try alternative notification methods
+    pcall(function()
+        if tooltipmessage then tooltipmessage:Remove() end
+        tooltipmessage = require(lp.PlayerGui:WaitForChild("GeneralUIModule")):GiveToolTip(lp, "Script Error: " .. context)
+        task.spawn(function()
+            task.wait(3)
+            if tooltipmessage then tooltipmessage:Remove(); tooltipmessage = nil end
+        end)
+    end)
+    pcall(function()
+        game:GetService("StarterGui"):SetCore("ChatMakeSystemMessage", {
+            Text = "[FischCH] " .. context .. ": " .. tostring(err);
+            Color = Color3.fromRGB(255, 100, 100);
+        })
+    end)
+end
+
+-- Debug function for loading
+local function debugPrint(msg)
+    print("[FISHCH DEBUG] " .. msg)
+    pcall(function()
+        game:GetService("StarterGui"):SetCore("ChatMakeSystemMessage", {
+            Text = "[FischCH] " .. msg;
+            Color = Color3.fromRGB(100, 255, 100);
+        })
+    end)
 end
 
 --// UI
 local library
+debugPrint("Starting library loading...")
+
 if CheckFunc(makefolder) and (CheckFunc(isfolder) and not isfolder('fisch')) then
     makefolder('fisch')
+    debugPrint("Created fisch folder")
 end
+
 if CheckFunc(writefile) and (CheckFunc(isfile) and not isfile('fisch/library.lua')) then
-    writefile('fisch/library.lua', game:HttpGet('https://raw.githubusercontent.com/MELLISAEFFENDY/gamech/refs/heads/main/library.lua'))
+    debugPrint("Downloading library.lua...")
+    local libraryCode = game:HttpGet('https://raw.githubusercontent.com/MELLISAEFFENDY/gamech/refs/heads/main/library.lua')
+    writefile('fisch/library.lua', libraryCode)
+    debugPrint("Library.lua downloaded and saved")
 end
+
+debugPrint("Loading library...")
 if CheckFunc(loadfile) then
+    debugPrint("Using loadfile method...")
     library = loadfile('fisch/library.lua')()
 else
+    debugPrint("Using loadstring method...")
     library = loadstring(game:HttpGet('https://raw.githubusercontent.com/MELLISAEFFENDY/gamech/refs/heads/main/library.lua'))()
 end
+
+if library then
+    debugPrint("Library loaded successfully!")
+else
+    error("Library failed to load!")
+end
+
+-- Initialize library with custom options
+library.options = {
+    topcolor       = Color3.fromRGB(30, 30, 30);
+    titlecolor     = Color3.fromRGB(255, 255, 255);
+    underlinecolor = Color3.fromRGB(0, 255, 140);
+    bgcolor        = Color3.fromRGB(35, 35, 35);
+    boxcolor       = Color3.fromRGB(35, 35, 35);
+    btncolor       = Color3.fromRGB(25, 25, 25);
+    dropcolor      = Color3.fromRGB(25, 25, 25);
+    sectncolor     = Color3.fromRGB(25, 25, 25);
+    bordercolor    = Color3.fromRGB(60, 60, 60);
+    font           = Enum.Font.SourceSans;
+    titlefont      = Enum.Font.Code;
+    fontsize       = 17;
+    titlesize      = 18;
+    textstroke     = 1;
+    titlestroke    = 1;
+    strokecolor    = Color3.fromRGB(0, 0, 0);
+    textcolor      = Color3.fromRGB(255, 255, 255);
+    titletextcolor = Color3.fromRGB(255, 255, 255);
+    placeholdercolor = Color3.fromRGB(255, 255, 255);
+    titlestrokecolor = Color3.fromRGB(0, 0, 0);
+}
 
 -- Initialize human behavior flags
 flags['humanbehavior'] = true
@@ -288,68 +366,157 @@ flags['errorsim'] = true
 flags['breakfrequency'] = 20
 flags['reactionspeed'] = 100
 
-local Automation = library:CreateWindow('Automation')
-local Modifications = library:CreateWindow('Modifications')
-local Teleports = library:CreateWindow('Teleports')
-local Visuals = library:CreateWindow('Visuals')
-Automation:Section('Autofarm')
-Automation:Toggle('Freeze Character', {location = flags, flag = 'freezechar'})
-Automation:Dropdown('Freeze Character Mode', {location = flags, flag = 'freezecharmode', list = {'Rod Equipped', 'Toggled'}})
-Automation:Toggle('Auto Cast', {location = flags, flag = 'autocast'})
-Automation:Toggle('Auto Shake', {location = flags, flag = 'autoshake'})
-Automation:Toggle('Auto Reel', {location = flags, flag = 'autoreel'})
-Automation:Section('Human-Like Behavior')
-Automation:Toggle('Enable Human Behavior', {location = flags, flag = 'humanbehavior'}, true)
-Automation:Toggle('Smart Breaks', {location = flags, flag = 'smartbreaks'}, true)
-Automation:Toggle('Error Simulation', {location = flags, flag = 'errorsim'}, true)
-Automation:Slider('Break Frequency', {location = flags, flag = 'breakfrequency', min = 5, max = 50, default = 20})
-Automation:Slider('Reaction Speed', {location = flags, flag = 'reactionspeed', min = 50, max = 200, default = 100})
-Automation:Label('Session Stats: Starting...')
-Automation:Button('Reset Session Stats', function()
-    humanBehavior.session.startTime = tick()
-    humanBehavior.session.fishCaught = 0
-    humanBehavior.session.lastBreak = tick()
-    humanBehavior.session.isOnBreak = false
-    humanBehavior.session.totalBreaks = 0
-    message("Session statistics reset!", 3)
+-- Add error handling for UI creation
+local success, err = pcall(function()
+    local Automation = library:CreateWindow('🎣 Autofarm')
+    local Modifications = library:CreateWindow('⚙️ Modifications') 
+    local Teleports = library:CreateWindow('🌍 Teleports')
+    local Visuals = library:CreateWindow('👁️ Visuals')
+    
+    if not Automation then
+        error("Failed to create Automation window")
+    end
+    
+    -- Setup UI elements
+    Automation:Section('Autofarm')
+    Automation:Toggle('Freeze Character', {location = flags, flag = 'freezechar'})
+    Automation:Dropdown('Freeze Character Mode', {location = flags, flag = 'freezecharmode', list = {'Rod Equipped', 'Toggled'}})
+    Automation:Toggle('Auto Cast', {location = flags, flag = 'autocast'})
+    Automation:Toggle('Auto Shake', {location = flags, flag = 'autoshake'})
+    Automation:Toggle('Auto Reel', {location = flags, flag = 'autoreel'})
+    Automation:Section('Human-Like Behavior')
+    Automation:Toggle('Enable Human Behavior', {location = flags, flag = 'humanbehavior'}, true)
+    Automation:Toggle('Smart Breaks', {location = flags, flag = 'smartbreaks'}, true)
+    Automation:Toggle('Error Simulation', {location = flags, flag = 'errorsim'}, true)
+    Automation:Slider('Break Frequency', {location = flags, flag = 'breakfrequency', min = 5, max = 50, default = 20})
+    Automation:Slider('Reaction Speed', {location = flags, flag = 'reactionspeed', min = 50, max = 200, default = 100})
+    Automation:Label('Session Stats: Starting...')
+    Automation:Button('Reset Session Stats', function()
+        humanBehavior.session.startTime = tick()
+        humanBehavior.session.fishCaught = 0
+        humanBehavior.session.lastBreak = tick()
+        humanBehavior.session.isOnBreak = false
+        humanBehavior.session.totalBreaks = 0
+        message("Session statistics reset!", 3)
+    end)
+    
+    -- Modifications section
+    if CheckFunc(hookmetamethod) then
+        Modifications:Section('Hooks')
+        Modifications:Toggle('No AFK Text', {location = flags, flag = 'noafk'})
+        Modifications:Toggle('Perfect Cast', {location = flags, flag = 'perfectcast'})
+        Modifications:Toggle('Always Catch', {location = flags, flag = 'alwayscatch'})
+    end
+    Modifications:Section('Client')
+    Modifications:Toggle('Infinite Oxygen', {location = flags, flag = 'infoxygen'})
+    Modifications:Toggle('No Temp & Oxygen', {location = flags, flag = 'nopeakssystems'})
+    
+    -- Teleports section
+    Teleports:Section('Locations')
+    Teleports:Dropdown('Zones', {location = flags, flag = 'zones', list = ZoneNames})
+    Teleports:Button('Teleport To Zone', function() 
+        local hrp = gethrp()
+        if hrp and flags['zones'] and TeleportLocations['Zones'][flags['zones']] then
+            pcall(function()
+                hrp.CFrame = TeleportLocations['Zones'][flags['zones']]
+            end)
+        end
+    end)
+    Teleports:Dropdown('Rod Locations', {location = flags, flag = 'rodlocations', list = RodNames})
+    Teleports:Button('Teleport To Rod', function() 
+        local hrp = gethrp()
+        if hrp and flags['rodlocations'] and TeleportLocations['Rods'][flags['rodlocations']] then
+            pcall(function()
+                hrp.CFrame = TeleportLocations['Rods'][flags['rodlocations']]
+            end)
+        end
+    end)
+    
+    -- Visuals section
+    Visuals:Section('Rod')
+    Visuals:Toggle('Body Rod Chams', {location = flags, flag = 'bodyrodchams'})
+    Visuals:Toggle('Rod Chams', {location = flags, flag = 'rodchams'})
+    Visuals:Dropdown('Material', {location = flags, flag = 'rodmaterial', list = {'ForceField', 'Neon'}})
+    Visuals:Section('Fish Abundance')
+    Visuals:Toggle('Free Fish Radar', {location = flags, flag = 'fishabundance'})
+    
+    message("🎣 FischCH loaded successfully! UI created.", 5)
 end)
------
-if CheckFunc(hookmetamethod) then
-    Modifications:Section('Hooks')
-    Modifications:Toggle('No AFK Text', {location = flags, flag = 'noafk'})
-    Modifications:Toggle('Perfect Cast', {location = flags, flag = 'perfectcast'})
-    Modifications:Toggle('Always Catch', {location = flags, flag = 'alwayscatch'})
+
+if not success then
+    warn("[FischCH] UI Creation Error: " .. tostring(err))
+    logError(err, "UI Creation")
+    
+    -- Create simple fallback UI
+    pcall(function()
+        local fallbackGui = Instance.new("ScreenGui")
+        fallbackGui.Name = "FischCH_Fallback"
+        fallbackGui.Parent = game:GetService("CoreGui")
+        
+        local frame = Instance.new("Frame")
+        frame.Name = "MainFrame"
+        frame.Size = UDim2.new(0, 300, 0, 200)
+        frame.Position = UDim2.new(0.5, -150, 0.5, -100)
+        frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+        frame.BorderSizePixel = 0
+        frame.Parent = fallbackGui
+        
+        local title = Instance.new("TextLabel")
+        title.Name = "Title"
+        title.Text = "🎣 FischCH - Fallback Mode"
+        title.Size = UDim2.new(1, 0, 0, 30)
+        title.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+        title.TextColor3 = Color3.fromRGB(255, 255, 255)
+        title.Font = Enum.Font.SourceSansBold
+        title.TextSize = 16
+        title.BorderSizePixel = 0
+        title.Parent = frame
+        
+        local errorLabel = Instance.new("TextLabel")
+        errorLabel.Name = "ErrorLabel"
+        errorLabel.Text = "Main UI failed to load, using basic controls"
+        errorLabel.Size = UDim2.new(1, -20, 0, 40)
+        errorLabel.Position = UDim2.new(0, 10, 0, 40)
+        errorLabel.BackgroundTransparency = 1
+        errorLabel.TextColor3 = Color3.fromRGB(255, 200, 200)
+        errorLabel.Font = Enum.Font.SourceSans
+        errorLabel.TextSize = 14
+        errorLabel.TextWrapped = true
+        errorLabel.Parent = frame
+        
+        -- Simple toggle buttons
+        local y = 90
+        local buttons = {
+            {"Auto Cast", "autocast"},
+            {"Auto Shake", "autoshake"},
+            {"Auto Reel", "autoreel"},
+            {"Human Behavior", "humanbehavior"}
+        }
+        
+        for i, data in ipairs(buttons) do
+            local btn = Instance.new("TextButton")
+            btn.Name = data[2]
+            btn.Text = data[1] .. ": OFF"
+            btn.Size = UDim2.new(0, 120, 0, 25)
+            btn.Position = UDim2.new(0, 10 + ((i-1) % 2) * 130, 0, y + math.floor((i-1) / 2) * 30)
+            btn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+            btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+            btn.Font = Enum.Font.SourceSans
+            btn.TextSize = 12
+            btn.BorderSizePixel = 0
+            btn.Parent = frame
+            
+            flags[data[2]] = false
+            btn.MouseButton1Click:Connect(function()
+                flags[data[2]] = not flags[data[2]]
+                btn.Text = data[1] .. ": " .. (flags[data[2]] and "ON" or "OFF")
+                btn.BackgroundColor3 = flags[data[2]] and Color3.fromRGB(0, 150, 0) or Color3.fromRGB(50, 50, 50)
+            end)
+        end
+        
+        debugPrint("Fallback UI created successfully")
+    end)
 end
-Modifications:Section('Client')
-Modifications:Toggle('Infinite Oxygen', {location = flags, flag = 'infoxygen'})
-Modifications:Toggle('No Temp & Oxygen', {location = flags, flag = 'nopeakssystems'})
------
-Teleports:Section('Locations')
-Teleports:Dropdown('Zones', {location = flags, flag = 'zones', list = ZoneNames})
-Teleports:Button('Teleport To Zone', function() 
-    local hrp = gethrp()
-    if hrp and flags['zones'] and TeleportLocations['Zones'][flags['zones']] then
-        pcall(function()
-            hrp.CFrame = TeleportLocations['Zones'][flags['zones']]
-        end)
-    end
-end)
-Teleports:Dropdown('Rod Locations', {location = flags, flag = 'rodlocations', list = RodNames})
-Teleports:Button('Teleport To Rod', function() 
-    local hrp = gethrp()
-    if hrp and flags['rodlocations'] and TeleportLocations['Rods'][flags['rodlocations']] then
-        pcall(function()
-            hrp.CFrame = TeleportLocations['Rods'][flags['rodlocations']]
-        end)
-    end
-end)
------
-Visuals:Section('Rod')
-Visuals:Toggle('Body Rod Chams', {location = flags, flag = 'bodyrodchams'})
-Visuals:Toggle('Rod Chams', {location = flags, flag = 'rodchams'})
-Visuals:Dropdown('Material', {location = flags, flag = 'rodmaterial', list = {'ForceField', 'Neon'}})
-Visuals:Section('Fish Abundance')
-Visuals:Toggle('Free Fish Radar', {location = flags, flag = 'fishabundance'})
 
 --// Loops
 RunService.Heartbeat:Connect(function()
@@ -642,15 +809,17 @@ RunService.Heartbeat:Connect(function()
         
         -- Update UI label if available
         pcall(function()
-            for _, window in pairs(library.windows) do
-                if window.name == "Automation" then
-                    for _, element in pairs(window.elements) do
-                        if element.type == "label" and string.find(element.text, "Session Stats") then
-                            element:UpdateText("Session Stats: " .. statusText)
-                            break
+            if library and library.windows then
+                for _, window in pairs(library.windows) do
+                    if window.name == "🎣 Autofarm" or window.name == "Automation" then
+                        for _, element in pairs(window.elements or {}) do
+                            if element.type == "label" and string.find(element.text, "Session Stats") then
+                                element:UpdateText("Session Stats: " .. statusText)
+                                break
+                            end
                         end
+                        break
                     end
-                    break
                 end
             end
         end)
