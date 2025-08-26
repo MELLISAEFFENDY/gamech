@@ -186,7 +186,7 @@ end
 
 -- Error logging function
 local function logError(err, context)
-    print("[FISHCH ERROR] " .. context .. ": " .. tostring(err))
+    -- print("[FISHCH ERROR] " .. context .. ": " .. tostring(err))
     message("Script Error: " .. context, 3)
 end
 
