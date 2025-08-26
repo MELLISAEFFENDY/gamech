@@ -377,13 +377,37 @@ pcall(function()
         updatePlayerNames()
         if flags['playerteleport'] then
             local target = Players:FindFirstChild(flags['playerteleport'])
-            if target and target.Character and target.Character:FindFirstChild('HumanoidRootPart') then
-                print("[DEBUG] Teleporting to player:", target.Name)
-                safeTeleport(target.Character.HumanoidRootPart.CFrame, target.Name)
-            else
-                print("[DEBUG] Player not found or not loaded")
-                message("Player not found or not loaded", 3)
+            if not target then
+                print("[DEBUG] Player not found")
+                message("Player not found", 3)
+                return
             end
+            local char = target.Character
+            if not char then
+                print("[DEBUG] Target character not loaded")
+                message("Target character not loaded", 3)
+                return
+            end
+            local hrp = char:FindFirstChild('HumanoidRootPart')
+            if not hrp then
+                print("[DEBUG] Target HumanoidRootPart not found")
+                message("Target HumanoidRootPart not found", 3)
+                return
+            end
+            if not isValidCFrame(hrp.CFrame) then
+                print("[DEBUG] Target position not valid")
+                message("Target position not valid", 3)
+                return
+            end
+            -- Optional: Batasi jarak teleport agar tidak terlalu jauh (misal max 5000 studs)
+            local myhrp = gethrp()
+            if myhrp and (myhrp.Position - hrp.Position).Magnitude > 5000 then
+                print("[DEBUG] Target too far away")
+                message("Target too far away", 3)
+                return
+            end
+            print("[DEBUG] Teleporting to player:", target.Name)
+            safeTeleport(hrp.CFrame, target.Name)
         else
             print("[DEBUG] No player selected")
             message("Please select a player first", 3)
