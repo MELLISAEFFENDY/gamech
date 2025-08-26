@@ -106,8 +106,15 @@ local RodMaterials = {}
 for i,v in pairs(TeleportLocations['Zones']) do table.insert(ZoneNames, i) end
 for i,v in pairs(TeleportLocations['Rods']) do table.insert(RodNames, i) end
 
-
-
+-- Debug: Print zona dan rod yang tersedia
+-- print("[DEBUG] Available Zones:", #ZoneNames)
+-- for i, zone in ipairs(ZoneNames) do
+--     print(" -", i, zone)
+-- end
+-- print("[DEBUG] Available Rods:", #RodNames)
+-- for i, rod in ipairs(RodNames) do
+--     print(" -", i, rod)
+-- end
 
 --// Functions
 FindChildOfClass = function(parent, classname)
@@ -315,8 +322,12 @@ local Modifications = library:CreateWindow('Modifications')
 local Teleports = library:CreateWindow('Teleports')
 local Visuals = library:CreateWindow('Visuals')
 
-
-
+-- Debug: Konfirmasi window creation
+-- print("[DEBUG] UI Windows created:")
+-- print("- Automation:", Automation and "✓" or "✗")
+-- print("- Modifications:", Modifications and "✓" or "✗") 
+-- print("- Teleports:", Teleports and "✓" or "✗")
+-- print("- Visuals:", Visuals and "✓" or "✗")
 Automation:Section('Autofarm')
 Automation:Toggle('Stealth Mode', {location = flags, flag = 'stealthmode', default = true})
 Automation:Slider('Human Behavior %', {location = flags, flag = 'humanbehavior', min = 0, max = 100, default = 50})
@@ -341,62 +352,82 @@ Teleports:Section('Locations')
 Teleports:Toggle('Safe Teleport Mode', {location = flags, flag = 'safeteleport', default = true})
 Teleports:Slider('Teleport Delay (ms)', {location = flags, flag = 'teleportdelay', min = 0, max = 2000, default = 100})
 Teleports:Dropdown('Zones', {location = flags, flag = 'zones', list = ZoneNames})
-
+-- Debug: Print untuk memastikan button dibuat
 pcall(function()
+    -- print("[DEBUG] Creating Teleport To Zone button...")
     Teleports:Button('Teleport To Zone', function() 
+    -- print("[DEBUG] Teleport To Zone button clicked")
         if flags['zones'] and TeleportLocations['Zones'][flags['zones']] then
+            -- print("[DEBUG] Teleporting to:", flags['zones'])
             safeTeleport(TeleportLocations['Zones'][flags['zones']], flags['zones'])
         else
+        -- print("[DEBUG] No zone selected")
             message("Please select a zone first", 3)
         end
     end)
+    -- print("[DEBUG] Teleport To Zone button created successfully")
 end)
 Teleports:Dropdown('Rod Locations', {location = flags, flag = 'rodlocations', list = RodNames})
 -- Player Teleport UI
 Teleports:Dropdown('Players', {location = flags, flag = 'playerteleport', list = PlayerNames})
 pcall(function()
+    -- print("[DEBUG] Creating Teleport To Player button...")
     Teleports:Button('Teleport To Player', function()
+    -- print("[DEBUG] Teleport To Player button clicked")
         updatePlayerNames()
         if flags['playerteleport'] then
             local target = Players:FindFirstChild(flags['playerteleport'])
             if not target then
+                -- print("[DEBUG] Player not found")
                 message("Player not found", 3)
                 return
             end
             local char = target.Character
             if not char then
+                -- print("[DEBUG] Target character not loaded")
                 message("Target character not loaded", 3)
                 return
             end
             local hrp = char:FindFirstChild('HumanoidRootPart')
             if not hrp then
+                -- print("[DEBUG] Target HumanoidRootPart not found")
                 message("Target HumanoidRootPart not found", 3)
                 return
             end
             if not isValidCFrame(hrp.CFrame) then
+                -- print("[DEBUG] Target position not valid")
                 message("Target position not valid", 3)
                 return
             end
             -- Optional: Batasi jarak teleport agar tidak terlalu jauh (misal max 5000 studs)
             local myhrp = gethrp()
             if myhrp and (myhrp.Position - hrp.Position).Magnitude > 5000 then
+                -- print("[DEBUG] Target too far away")
                 message("Target too far away", 3)
                 return
             end
+            -- print("[DEBUG] Teleporting to player:", target.Name)
             safeTeleport(hrp.CFrame, target.Name)
         else
+        -- print("[DEBUG] No player selected")
             message("Please select a player first", 3)
         end
     end)
+    -- print("[DEBUG] Teleport To Player button created successfully")
 end)
 pcall(function()
+    -- print("[DEBUG] Creating Teleport To Rod button...")
     Teleports:Button('Teleport To Rod', function() 
+    -- print("[DEBUG] Teleport To Rod button clicked")
         if flags['rodlocations'] and TeleportLocations['Rods'][flags['rodlocations']] then
+            -- print("[DEBUG] Teleporting to rod:", flags['rodlocations'])
             safeTeleport(TeleportLocations['Rods'][flags['rodlocations']], flags['rodlocations'])
         else
+        -- print("[DEBUG] No rod location selected")
             message("Please select a rod location first", 3)
         end
     end)
+    -- print("[DEBUG] Teleport To Rod button created successfully")
 end)
 -----
 Teleports:Section('Utilities')
@@ -411,41 +442,51 @@ Teleports:Button('Get Current Position', function()
         if CheckFunc(setclipboard) then
             setclipboard(posString)
             message("Position copied to clipboard!", 3)
-        pcall(function()
-            Teleports:Button('Teleport To Player', function()
-                updatePlayerNames()
-                if flags['playerteleport'] then
-                    local target = Players:FindFirstChild(flags['playerteleport'])
-                    if not target then
-                        message("Player not found", 3)
-                        return
+        else
+            print("Current Position: " .. posString)
+            message("Position printed to console", 3)
+        end
+    end
+end)
+Teleports:Button('Teleport to Spawn', function()
+    safeTeleport(CFrame.new(0, 10, 0), "Spawn")
+end)
+-----
+Visuals:Section('Rod')
+Visuals:Toggle('Body Rod Chams', {location = flags, flag = 'bodyrodchams'})
+Visuals:Toggle('Rod Chams', {location = flags, flag = 'rodchams'})
+Visuals:Dropdown('Material', {location = flags, flag = 'rodmaterial', list = {'ForceField', 'Neon'}})
+Visuals:Section('Fish Abundance')
+Visuals:Toggle('Free Fish Radar', {location = flags, flag = 'fishabundance'})
+
+--// Loops
+RunService.Heartbeat:Connect(function()
+    pcall(function()
+        -- Autofarm
+        if flags['freezechar'] then
+            local hrp = gethrp()
+            if hrp then
+                if flags['freezecharmode'] == 'Toggled' then
+                    if characterposition == nil then
+                        characterposition = hrp.CFrame
+                    else
+                        hrp.CFrame = characterposition
                     end
-                    local char = target.Character
-                    if not char then
-                        message("Target character not loaded", 3)
-                        return
+                elseif flags['freezecharmode'] == 'Rod Equipped' then
+                    local rod = FindRod()
+                    if rod and characterposition == nil then
+                        characterposition = hrp.CFrame
+                    elseif rod and characterposition ~= nil then
+                        hrp.CFrame = characterposition
+                    else
+                        characterposition = nil
                     end
-                    local hrp = char:FindFirstChild('HumanoidRootPart')
-                    if not hrp then
-                        message("Target HumanoidRootPart not found", 3)
-                        return
-                    end
-                    if not isValidCFrame(hrp.CFrame) then
-                        message("Target position not valid", 3)
-                        return
-                    end
-                    -- Optional: Batasi jarak teleport agar tidak terlalu jauh (misal max 5000 studs)
-                    local myhrp = gethrp()
-                    if myhrp and (myhrp.Position - hrp.Position).Magnitude > 5000 then
-                        message("Target too far away", 3)
-                        return
-                    end
-                    safeTeleport(hrp.CFrame, target.Name)
-                else
-                    message("Please select a player first", 3)
                 end
-            end)
-        end)
+            end
+        else
+            characterposition = nil
+        end
+        if flags['autoshake'] then
             pcall(function()
                 if FindChild(lp.PlayerGui, 'shakeui') and FindChild(lp.PlayerGui['shakeui'], 'safezone') and FindChild(lp.PlayerGui['shakeui']['safezone'], 'button') then
                     if flags['stealthmode'] then
