@@ -176,7 +176,12 @@ end
 message = function(text, time)
     if tooltipmessage then tooltipmessage:Remove() end
     pcall(function()
-        tooltipmessage = require(lp.PlayerGui:WaitForChild("GeneralUIModule")):GiveToolTip(lp, text)
+        local guiModule = lp.PlayerGui:WaitForChild("GeneralUIModule", 5)
+        if not guiModule then
+            warn("[FISHCH] GeneralUIModule tidak ditemukan di PlayerGui!")
+            return
+        end
+        tooltipmessage = require(guiModule):GiveToolTip(lp, text)
         task.spawn(function()
             task.wait(time)
             if tooltipmessage then tooltipmessage:Remove(); tooltipmessage = nil end
