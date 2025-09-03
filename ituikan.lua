@@ -32,14 +32,12 @@ local TeleportLocations = {
         ['Cryogenic Canal'] = CFrame.new(19958.5176, 917.195923, 5332.59375, 0.758922458, -7.29783434e-09, 0.651180983, -4.58880756e-09, 1, 1.65551253e-08, -0.651180983, -1.55522013e-08, 0.758922458),
         ['Glacial Grotto'] = CFrame.new(20003.0273, 1136.42798, 5555.95996, 0.983130038, -3.94455064e-08, 0.182907909, 3.45229765e-08, 1, 3.0096718e-08, -0.182907909, -2.32744615e-08, 0.983130038),
         ["Keeper's Altar"] = CFrame.new(1297.92285, -805.292236, -284.155823, -0.99758029, 5.80044706e-08, -0.0695239156, 6.16549869e-08, 1, -5.03615105e-08, 0.0695239156, -5.45261436e-08, -0.99758029),
-        -- New locations from GPS data
         ['Atlantis'] = CFrame.new(-4465, -604, 1874)
     },
     ['Rods'] = {
         ['Heaven Rod'] = CFrame.new(20025.0508, -467.665955, 7114.40234, -0.9998191, -2.41349773e-10, 0.0190212391, -4.76249762e-10, 1, -1.23448247e-08, -0.0190212391, -1.23516495e-08, -0.9998191),
         ['Summit Rod'] = CFrame.new(20213.334, 736.668823, 5707.8208, -0.274440169, 3.53429606e-08, 0.961604178, -1.52819659e-08, 1, -4.11156122e-08, -0.961604178, -2.59789772e-08, -0.274440169),
         ['Kings Rod'] = CFrame.new(1380.83862, -807.198608, -304.22229, -0.692510426, 9.24755454e-08, 0.72140789, 4.86611427e-08, 1, -8.1475676e-08, -0.72140789, -2.13182219e-08, -0.692510426),
-        -- New rods from GPS data
         ['Training Rod'] = CFrame.new(465, 150, 235),
         ['Long Rod'] = CFrame.new(480, 180, 150),
         ['Fortune Rod'] = CFrame.new(-1515, 141, 765),
@@ -50,27 +48,20 @@ local TeleportLocations = {
         ['Poseidon Rod'] = CFrame.new(-4086, -559, 895),
         ['Zeus Rod'] = CFrame.new(-4272, -629, 2665),
         ['Kraken Rod'] = CFrame.new(-4415, -997, 2055),
-        -- Desolate Deep Rods
         ['Reinforced Rod'] = CFrame.new(-975, -245, -2700),
         ['Trident Rod'] = CFrame.new(-1485, -225, -2195),
-        -- Forsaken Shores Rods
         ['Scurvy Rod'] = CFrame.new(-2830, 215, 1510),
-        -- Ancient Isle Rods
         ['Stone Rod'] = CFrame.new(5487, 143, -316),
-        -- Terrapin Island Rods
         ['Magnet Rod'] = CFrame.new(-200, 130, 1930)
     },
     ['Items'] = {
-        -- Moosewood Items
         ['Fish Radar'] = CFrame.new(365, 135, 275),
         ['Basic Diving Gear'] = CFrame.new(370, 135, 250),
         ['Bait Crate (Moosewood)'] = CFrame.new(315, 135, 335),
-        -- Roslit Bay Items
         ['Meteor Totem'] = CFrame.new(-1945, 275, 230),
         ['Glider'] = CFrame.new(-1710, 150, 740),
         ['Bait Crate (Roslit)'] = CFrame.new(-1465, 130, 680),
         ['Crab Cage (Roslit)'] = CFrame.new(-1485, 130, 640),
-        -- Atlantis Items
         ['Poseidon Wrath Totem'] = CFrame.new(-3953, -556, 853),
         ['Zeus Storm Totem'] = CFrame.new(-4325, -630, 2687),
         ['Quality Bait Crate (Atlantis)'] = CFrame.new(-177, 144, 1933),
@@ -78,33 +69,25 @@ local TeleportLocations = {
         ['Super Flippers'] = CFrame.new(-4463, -603, 1876),
         ['Advanced Diving Gear (Atlantis)'] = CFrame.new(-4452, -603, 1877),
         ['Conception Conch (Atlantis)'] = CFrame.new(-4450, -605, 1874),
-        -- Desolate Deep Items
         ['Advanced Diving Gear (Desolate)'] = CFrame.new(-790, 125, -3100),
         ['Basic Diving Gear (Desolate)'] = CFrame.new(-1655, -210, -2825),
         ['Tidebreaker'] = CFrame.new(-1645, -210, -2855),
         ['Conception Conch (Desolate)'] = CFrame.new(-1630, -210, -2860),
         ['Aurora Totem'] = CFrame.new(-1800, -135, -3280),
-        -- Forsaken Shores Items
         ['Bait Crate (Forsaken)'] = CFrame.new(-2490, 130, 1535),
         ['Crab Cage (Forsaken)'] = CFrame.new(-2525, 135, -1575),
-        -- Ancient Isle Items
         ['Eclipse Totem'] = CFrame.new(5966, 274, 846),
         ['Bait Crate (Ancient)'] = CFrame.new(6075, 195, 260),
-        -- Mushgrove Swamp Items
         ['Smokescreen Totem'] = CFrame.new(2790, 140, -625),
         ['Crab Cage (Mushgrove)'] = CFrame.new(2520, 135, -895),
-        -- Snowcap Island Items
         ['Windset Totem'] = CFrame.new(2845, 180, 2700),
-        -- Sunstone Island Items
         ['Sundial Totem'] = CFrame.new(-1145, 135, -1075),
         ['Bait Crate (Sunstone)'] = CFrame.new(-1045, 200, -1100),
         ['Crab Cage (Sunstone)'] = CFrame.new(-920, 130, -1105),
-        -- Terrapin Island Items
         ['Quality Bait Crate (Terrapin)'] = CFrame.new(-175, 145, 1935),
         ['Tempest Totem'] = CFrame.new(35, 130, 1945)
     },
     ['Fishing Spots'] = {
-        -- Moosewood Fish
         ['Trout Spot'] = CFrame.new(390, 132, 345),
         ['Anchovy Spot'] = CFrame.new(130, 135, 630),
         ['Yellowfin Tuna Spot'] = CFrame.new(705, 136, 340),
@@ -112,7 +95,6 @@ local TeleportLocations = {
         ['Goldfish Spot'] = CFrame.new(525, 145, 310),
         ['Flounder Spot'] = CFrame.new(285, 133, 215),
         ['Pike Spot'] = CFrame.new(540, 145, 330),
-        -- Roslit Bay Fish
         ['Perch Spot'] = CFrame.new(-1805, 140, 595),
         ['Blue Tang Spot'] = CFrame.new(-1465, 125, 525),
         ['Clownfish Spot'] = CFrame.new(-1520, 125, 520),
@@ -120,16 +102,13 @@ local TeleportLocations = {
         ['Angelfish Spot'] = CFrame.new(-1500, 135, 615),
         ['Arapaima Spot'] = CFrame.new(-1765, 140, 600),
         ['Suckermouth Catfish Spot'] = CFrame.new(-1800, 140, 620),
-        -- Desolate Deep Fish
         ['Phantom Ray Spot'] = CFrame.new(-1685, -235, -3090),
         ['Cockatoo Squid Spot'] = CFrame.new(-1645, -205, -2790),
         ['Banditfish Spot'] = CFrame.new(-1500, -235, -2855),
-        -- Forsaken Shores Fish
         ['Scurvy Sailfish Spot'] = CFrame.new(-2430, 130, 1450),
         ['Cutlass Fish Spot'] = CFrame.new(-2645, 130, 1410),
         ['Shipwreck Barracuda Spot'] = CFrame.new(-3597, 140, 1604),
         ['Golden Seahorse Spot'] = CFrame.new(-3100, 127, 1450),
-        -- Ancient Isle Fish
         ['Anomalocaris Spot'] = CFrame.new(5504, 143, -321),
         ['Cobia Spot'] = CFrame.new(5983, 125, 1007),
         ['Hallucigenia Spot'] = CFrame.new(6015, 190, 339),
@@ -137,13 +116,11 @@ local TeleportLocations = {
         ['Deep Sea Fragment Spot'] = CFrame.new(5841, 81, 388),
         ['Solar Fragment Spot'] = CFrame.new(6073, 443, 684),
         ['Earth Fragment Spot'] = CFrame.new(5972, 274, 845),
-        -- Mushgrove Swamp Fish
         ['White Perch Spot'] = CFrame.new(2475, 125, -675),
         ['Grey Carp Spot'] = CFrame.new(2665, 125, -815),
         ['Bowfin Spot'] = CFrame.new(2445, 125, -795),
         ['Marsh Gar Spot'] = CFrame.new(2520, 125, -815),
         ['Alligator Spot'] = CFrame.new(2670, 130, -710),
-        -- Snowcap Island Fish
         ['Pollock Spot'] = CFrame.new(2550, 135, 2385),
         ['Bluegill Spot'] = CFrame.new(3070, 130, 2600),
         ['Herring Spot'] = CFrame.new(2595, 140, 2500),
@@ -151,7 +128,6 @@ local TeleportLocations = {
         ['Arctic Char Spot'] = CFrame.new(2350, 130, 2230),
         ['Lingcod Spot'] = CFrame.new(2820, 125, 2805),
         ['Glacierfish Spot'] = CFrame.new(2860, 135, 2620),
-        -- Sunstone Island Fish
         ['Sweetfish Spot'] = CFrame.new(-940, 130, -1105),
         ['Glassfish Spot'] = CFrame.new(-905, 130, -1000),
         ['Longtail Bass Spot'] = CFrame.new(-860, 135, -1205),
@@ -160,7 +136,6 @@ local TeleportLocations = {
         ['Trumpetfish Spot'] = CFrame.new(-790, 125, -1340),
         ['Mahi Mahi Spot'] = CFrame.new(-730, 130, -1350),
         ['Sunfish Spot'] = CFrame.new(-975, 125, -1430),
-        -- Terrapin Island Fish
         ['Walleye Spot'] = CFrame.new(-225, 125, 2150),
         ['White Bass Spot'] = CFrame.new(-50, 130, 2025),
         ['Redeye Bass Spot'] = CFrame.new(-35, 125, 2285),
@@ -169,7 +144,6 @@ local TeleportLocations = {
         ['Olm Spot'] = CFrame.new(95, 125, 1980)
     },
     ['NPCs'] = {
-        -- Moosewood NPCs
         ['Angler'] = CFrame.new(480, 150, 295),
         ['Appraiser'] = CFrame.new(445, 150, 210),
         ['Arnold'] = CFrame.new(320, 134, 264),
@@ -205,11 +179,9 @@ local TeleportLocations = {
         ['Valentine\'s Day NPC'] = CFrame.new(347, 136, 330),
         ['Witch'] = CFrame.new(410, 135, 310),
         ['Wren'] = CFrame.new(368, 135, 286),
-        -- Roslit Bay / Ocean NPCs
         ['Mike'] = CFrame.new(210, 115, 640),
         ['Ryder Vex'] = CFrame.new(233, 116, 746),
         ['Ocean'] = CFrame.new(1230, 125, 575),
-        -- Pine Shoals NPCs
         ['Lars Timberjaw'] = CFrame.new(1217, 87, 574),
         ['Sporey'] = CFrame.new(1245, 86, 425),
         ['Sporey Mom'] = CFrame.new(1262, 129, 663),
@@ -222,19 +194,13 @@ local TeleportLocations = {
         ['Willow'] = CFrame.new(501, 134, 125),
         ['Marley'] = CFrame.new(505, 134, 120),
         ['Sage'] = CFrame.new(513, 134, 125),
-        -- Ancient Isle NPCs
         ['Meteoriticist'] = CFrame.new(5922, 262, 596),
         ['Chiseler'] = CFrame.new(6087, 195, 294),
-        -- Terrapin Island NPCs
         ['Sea Traveler'] = CFrame.new(140, 150, 2030),
         ['Idle Fishing NPC 1'] = CFrame.new(72, 133, 2139),
-        -- Snowcap Island NPCs
         ['Wilson'] = CFrame.new(2935, 280, 2565),
-        -- Mushgrove Swamp NPCs
         ['Agaric'] = CFrame.new(2931, 4268, 3039),
-        -- Sunstone Island NPCs
         ['Sunken Chest'] = CFrame.new(798, 130, 1667),
-        -- Event/Special NPCs
         ['Daily Shopkeeper'] = CFrame.new(229, 139, 42),
         ['AFK Rewards'] = CFrame.new(233, 139, 38),
         ['Travelling Merchant'] = CFrame.new(2, 500, 0),
@@ -242,7 +208,6 @@ local TeleportLocations = {
         ['Nick'] = CFrame.new(50, 0, 0),
         ['Hollow'] = CFrame.new(25, 0, 0),
         ['1.23'] = CFrame.new(7, 100, 0),
-        -- Fischfest NPCs
         ['Shopper Girl'] = CFrame.new(1000, 140, 9932),
         ['Sandy Finn'] = CFrame.new(1015, 140, 9911),
         ['Red NPC'] = CFrame.new(1020, 173, 9857),
@@ -256,6 +221,7 @@ local TeleportLocations = {
         ['Barnacle Bill'] = CFrame.new(989, 143, 9975)
     }
 }
+
 local ZoneNames = {}
 local RodNames = {}
 local ItemNames = {}
@@ -263,6 +229,7 @@ local FishingSpotNames = {}
 local NPCNames = {}
 local RodColors = {}
 local RodMaterials = {}
+
 for i,v in pairs(TeleportLocations['Zones']) do table.insert(ZoneNames, i) end
 for i,v in pairs(TeleportLocations['Rods']) do table.insert(RodNames, i) end
 for i,v in pairs(TeleportLocations['Items']) do table.insert(ItemNames, i) end
@@ -273,15 +240,18 @@ for i,v in pairs(TeleportLocations['NPCs']) do table.insert(NPCNames, i) end
 FindChildOfClass = function(parent, classname)
     return parent:FindFirstChildOfClass(classname)
 end
+
 FindChild = function(parent, child)
     return parent:FindFirstChild(child)
 end
+
 FindChildOfType = function(parent, childname, classname)
-    child = parent:FindFirstChild(childname)
+    local child = parent:FindFirstChild(childname)
     if child and child.ClassName == classname then
         return child
     end
 end
+
 CheckFunc = function(func)
     return typeof(func) == 'function'
 end
@@ -290,12 +260,15 @@ end
 getchar = function()
     return lp.Character or lp.CharacterAdded:Wait()
 end
+
 gethrp = function()
     return getchar():WaitForChild('HumanoidRootPart')
 end
+
 gethum = function()
     return getchar():WaitForChild('Humanoid')
 end
+
 FindRod = function()
     if FindChildOfClass(getchar(), 'Tool') and FindChild(FindChildOfClass(getchar(), 'Tool'), 'values') then
         return FindChildOfClass(getchar(), 'Tool')
@@ -303,6 +276,7 @@ FindRod = function()
         return nil
     end
 end
+
 message = function(text, time)
     if tooltipmessage then tooltipmessage:Remove() end
     tooltipmessage = require(lp.PlayerGui:WaitForChild("GeneralUIModule")):GiveToolTip(lp, text)
@@ -570,6 +544,7 @@ RunService.Heartbeat:Connect(function()
     else
         characterposition = nil
     end
+    
     if flags['autoshake'] then
         if FindChild(lp.PlayerGui, 'shakeui') and FindChild(lp.PlayerGui['shakeui'], 'safezone') and FindChild(lp.PlayerGui['shakeui']['safezone'], 'button') then
             GuiService.SelectedObject = lp.PlayerGui['shakeui']['safezone']['button']
@@ -579,12 +554,14 @@ RunService.Heartbeat:Connect(function()
             end
         end
     end
+    
     if flags['autocast'] then
         local rod = FindRod()
         if rod ~= nil and rod['values']['lure'].Value <= .001 and task.wait(.5) then
             rod.events.cast:FireServer(100, 1)
         end
     end
+    
     if flags['autoreel'] then
         local rod = FindRod()
         if rod ~= nil and rod['values']['lure'].Value == 100 and task.wait(.5) then
@@ -646,6 +623,7 @@ RunService.Heartbeat:Connect(function()
             end
         end
     end
+    
     if flags['bodyrodchams'] then
         local rod = getchar():FindFirstChild('RodBodyModel')
         if rod ~= nil and FindChild(rod, 'Details') then
@@ -699,9 +677,10 @@ RunService.Heartbeat:Connect(function()
             end
         end
     end
+    
     if flags['fishabundance'] then
         if not fishabundancevisible then
-            message('\<b><font color = \"#9eff80\">Fish Abundance Zones</font></b>\ are now visible', 5)
+            message('Fish Abundance Zones are now visible', 5)
         end
         for i,v in workspace.zones.fishing:GetChildren() do
             if FindChildOfType(v, 'Abundance', 'StringValue') and FindChildOfType(v, 'radar1', 'BillboardGui') then
@@ -712,7 +691,7 @@ RunService.Heartbeat:Connect(function()
         fishabundancevisible = flags['fishabundance']
     else
         if fishabundancevisible then
-            message('\<b><font color = \"#9eff80\">Fish Abundance Zones</font></b>\ are no longer visible', 5)
+            message('Fish Abundance Zones are no longer visible', 5)
         end
         for i,v in workspace.zones.fishing:GetChildren() do
             if FindChildOfType(v, 'Abundance', 'StringValue') and FindChildOfType(v, 'radar1', 'BillboardGui') then
@@ -754,6 +733,7 @@ RunService.Heartbeat:Connect(function()
             FindChildOfType(getchar(), 'DivingTank', 'Decal'):Destroy()
         end
     end
+    
     if flags['nopeakssystems'] then
         getchar():SetAttribute('WinterCloakEquipped', true)
         getchar():SetAttribute('Refill', true)
