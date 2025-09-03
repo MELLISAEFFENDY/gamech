@@ -237,39 +237,39 @@ for i,v in pairs(TeleportLocations['Fishing Spots']) do table.insert(FishingSpot
 for i,v in pairs(TeleportLocations['NPCs']) do table.insert(NPCNames, i) end
 
 --// Functions
-FindChildOfClass = function(parent, classname)
+local FindChildOfClass = function(parent, classname)
     return parent:FindFirstChildOfClass(classname)
 end
 
-FindChild = function(parent, child)
+local FindChild = function(parent, child)
     return parent:FindFirstChild(child)
 end
 
-FindChildOfType = function(parent, childname, classname)
+local FindChildOfType = function(parent, childname, classname)
     local child = parent:FindFirstChild(childname)
     if child and child.ClassName == classname then
         return child
     end
 end
 
-CheckFunc = function(func)
+local CheckFunc = function(func)
     return typeof(func) == 'function'
 end
 
 --// Custom Functions
-getchar = function()
+local getchar = function()
     return lp.Character or lp.CharacterAdded:Wait()
 end
 
-gethrp = function()
+local gethrp = function()
     return getchar():WaitForChild('HumanoidRootPart')
 end
 
-gethum = function()
+local gethum = function()
     return getchar():WaitForChild('Humanoid')
 end
 
-FindRod = function()
+local FindRod = function()
     if FindChildOfClass(getchar(), 'Tool') and FindChild(FindChildOfClass(getchar(), 'Tool'), 'values') then
         return FindChildOfClass(getchar(), 'Tool')
     else
@@ -277,7 +277,7 @@ FindRod = function()
     end
 end
 
-message = function(text, time)
+local message = function(text, time)
     if tooltipmessage then tooltipmessage:Remove() end
     tooltipmessage = require(lp.PlayerGui:WaitForChild("GeneralUIModule")):GiveToolTip(lp, text)
     task.spawn(function()
@@ -557,14 +557,16 @@ RunService.Heartbeat:Connect(function()
     
     if flags['autocast'] then
         local rod = FindRod()
-        if rod ~= nil and rod['values']['lure'].Value <= .001 and task.wait(.5) then
+        if rod ~= nil and rod['values']['lure'].Value <= .001 then
+            task.wait(.5)
             rod.events.cast:FireServer(100, 1)
         end
     end
     
     if flags['autoreel'] then
         local rod = FindRod()
-        if rod ~= nil and rod['values']['lure'].Value == 100 and task.wait(.5) then
+        if rod ~= nil and rod['values']['lure'].Value == 100 then
+            task.wait(.5)
             ReplicatedStorage.events.reelfinished:FireServer(100, true)
         end
     end
