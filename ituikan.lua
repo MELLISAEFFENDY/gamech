@@ -524,14 +524,14 @@ VisualsTab:Checkbox({
 --// Loops
 RunService.Heartbeat:Connect(function()
     -- Autofarm
-    if flags['freezechar'] then
-        if flags['freezecharmode'] == 'Toggled' then
+    if flags.freezechar then
+        if flags.freezecharmode == 'Toggled' then
             if characterposition == nil then
                 characterposition = gethrp().CFrame
             else
                 gethrp().CFrame = characterposition
             end
-        elseif flags['freezecharmode'] == 'Rod Equipped' then
+        elseif flags.freezecharmode == 'Rod Equipped' then
             local rod = FindRod()
             if rod and characterposition == nil then
                 characterposition = gethrp().CFrame
@@ -545,7 +545,7 @@ RunService.Heartbeat:Connect(function()
         characterposition = nil
     end
     
-    if flags['autoshake'] then
+    if flags.autoshake then
         if FindChild(lp.PlayerGui, 'shakeui') and FindChild(lp.PlayerGui['shakeui'], 'safezone') and FindChild(lp.PlayerGui['shakeui']['safezone'], 'button') then
             GuiService.SelectedObject = lp.PlayerGui['shakeui']['safezone']['button']
             if GuiService.SelectedObject == lp.PlayerGui['shakeui']['safezone']['button'] then
@@ -555,7 +555,7 @@ RunService.Heartbeat:Connect(function()
         end
     end
     
-    if flags['autocast'] then
+    if flags.autocast then
         local rod = FindRod()
         if rod ~= nil and rod['values']['lure'].Value <= .001 then
             task.wait(.5)
@@ -563,7 +563,7 @@ RunService.Heartbeat:Connect(function()
         end
     end
     
-    if flags['autoreel'] then
+    if flags.autoreel then
         local rod = FindRod()
         if rod ~= nil and rod['values']['lure'].Value == 100 then
             task.wait(.5)
@@ -572,7 +572,7 @@ RunService.Heartbeat:Connect(function()
     end
 
     -- Visuals
-    if flags['rodchams'] then
+    if flags.rodchams then
         local rod = FindRod()
         if rod ~= nil and FindChild(rod, 'Details') then
             local rodName = tostring(rod)
@@ -588,24 +588,24 @@ RunService.Heartbeat:Connect(function()
                     if RodMaterials[rodName][v.Name..i] == nil then
                         if v.Material == Enum.Material.Neon then
                             RodMaterials[rodName][v.Name..i] = Enum.Material.Neon
-                        elseif v.Material ~= Enum.Material.ForceField and v.Material ~= Enum.Material[flags['rodmaterial']] then
+                        elseif v.Material ~= Enum.Material.ForceField and v.Material ~= Enum.Material[flags.rodmaterial] then
                             RodMaterials[rodName][v.Name..i] = v.Material
                         end
                     end
-                    v.Material = Enum.Material[flags['rodmaterial']]
+                    v.Material = Enum.Material[flags.rodmaterial]
                     v.Color = Color3.fromRGB(100, 100, 255)
                 end
             end
             if rod['handle'].Color ~= Color3.fromRGB(100, 100, 255) then
                 RodColors[rodName]['handle'] = rod['handle'].Color
             end
-            if rod['handle'].Material ~= Enum.Material.ForceField and rod['handle'].Material ~= Enum.Material.Neon and rod['handle'].Material ~= Enum.Material[flags['rodmaterial']] then
+            if rod['handle'].Material ~= Enum.Material.ForceField and rod['handle'].Material ~= Enum.Material.Neon and rod['handle'].Material ~= Enum.Material[flags.rodmaterial] then
                 RodMaterials[rodName]['handle'] = rod['handle'].Material
             end
-            rod['handle'].Material = Enum.Material[flags['rodmaterial']]
+            rod['handle'].Material = Enum.Material[flags.rodmaterial]
             rod['handle'].Color = Color3.fromRGB(100, 100, 255)
         end
-    elseif not flags['rodchams'] then
+    elseif not flags.rodchams then
         local rod = FindRod()
         if rod ~= nil and FindChild(rod, 'Details') then
             local rodName = tostring(rod)
@@ -626,7 +626,7 @@ RunService.Heartbeat:Connect(function()
         end
     end
     
-    if flags['bodyrodchams'] then
+    if flags.bodyrodchams then
         local rod = getchar():FindFirstChild('RodBodyModel')
         if rod ~= nil and FindChild(rod, 'Details') then
             local rodName = tostring(rod)
@@ -642,24 +642,24 @@ RunService.Heartbeat:Connect(function()
                     if RodMaterials[rodName][v.Name..i] == nil then
                         if v.Material == Enum.Material.Neon then
                             RodMaterials[rodName][v.Name..i] = Enum.Material.Neon
-                        elseif v.Material ~= Enum.Material.ForceField and v.Material ~= Enum.Material[flags['rodmaterial']] then
+                        elseif v.Material ~= Enum.Material.ForceField and v.Material ~= Enum.Material[flags.rodmaterial] then
                             RodMaterials[rodName][v.Name..i] = v.Material
                         end
                     end
-                    v.Material = Enum.Material[flags['rodmaterial']]
+                    v.Material = Enum.Material[flags.rodmaterial]
                     v.Color = Color3.fromRGB(100, 100, 255)
                 end
             end
             if rod['handle'].Color ~= Color3.fromRGB(100, 100, 255) then
                 RodColors[rodName]['handle'] = rod['handle'].Color
             end
-            if rod['handle'].Material ~= Enum.Material.ForceField and rod['handle'].Material ~= Enum.Material.Neon and rod['handle'].Material ~= Enum.Material[flags['rodmaterial']] then
+            if rod['handle'].Material ~= Enum.Material.ForceField and rod['handle'].Material ~= Enum.Material.Neon and rod['handle'].Material ~= Enum.Material[flags.rodmaterial] then
                 RodMaterials[rodName]['handle'] = rod['handle'].Material
             end
-            rod['handle'].Material = Enum.Material[flags['rodmaterial']]
+            rod['handle'].Material = Enum.Material[flags.rodmaterial]
             rod['handle'].Color = Color3.fromRGB(100, 100, 255)
         end
-    elseif not flags['bodyrodchams'] then
+    elseif not flags.bodyrodchams then
         local rod = getchar():FindFirstChild('RodBodyModel')
         if rod ~= nil and FindChild(rod, 'Details') then
             local rodName = tostring(rod)
@@ -680,7 +680,7 @@ RunService.Heartbeat:Connect(function()
         end
     end
     
-    if flags['fishabundance'] then
+    if flags.fishabundance then
         if not fishabundancevisible then
             message('Fish Abundance Zones are now visible', 5)
         end
@@ -690,7 +690,7 @@ RunService.Heartbeat:Connect(function()
                 v['radar2'].Enabled = true
             end
         end
-        fishabundancevisible = flags['fishabundance']
+        fishabundancevisible = flags.fishabundance
     else
         if fishabundancevisible then
             message('Fish Abundance Zones are no longer visible', 5)
@@ -701,11 +701,11 @@ RunService.Heartbeat:Connect(function()
                 v['radar2'].Enabled = false
             end
         end
-        fishabundancevisible = flags['fishabundance']
+        fishabundancevisible = flags.fishabundance
     end
 
     -- Modifications
-    if flags['infoxygen'] then
+    if flags.infoxygen then
         if not deathcon then
             deathcon = gethum().Died:Connect(function()
                 task.delay(9, function()
@@ -736,7 +736,7 @@ RunService.Heartbeat:Connect(function()
         end
     end
     
-    if flags['nopeakssystems'] then
+    if flags.nopeakssystems then
         getchar():SetAttribute('WinterCloakEquipped', true)
         getchar():SetAttribute('Refill', true)
     else
@@ -749,13 +749,13 @@ end)
 if CheckFunc(hookmetamethod) then
     local old; old = hookmetamethod(game, "__namecall", function(self, ...)
         local method, args = getnamecallmethod(), {...}
-        if method == 'FireServer' and self.Name == 'afk' and flags['noafk'] then
+        if method == 'FireServer' and self.Name == 'afk' and flags.noafk then
             args[1] = false
             return old(self, unpack(args))
-        elseif method == 'FireServer' and self.Name == 'cast' and flags['perfectcast'] then
+        elseif method == 'FireServer' and self.Name == 'cast' and flags.perfectcast then
             args[1] = 100
             return old(self, unpack(args))
-        elseif method == 'FireServer' and self.Name == 'reelfinished' and flags['alwayscatch'] then
+        elseif method == 'FireServer' and self.Name == 'reelfinished' and flags.alwayscatch then
             args[1] = 100
             args[2] = true
             return old(self, unpack(args))
