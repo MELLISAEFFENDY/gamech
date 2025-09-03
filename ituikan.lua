@@ -260,12 +260,14 @@ local ZoneNames = {}
 local RodNames = {}
 local ItemNames = {}
 local FishingSpotNames = {}
+local NPCNames = {}
 local RodColors = {}
 local RodMaterials = {}
 for i,v in pairs(TeleportLocations['Zones']) do table.insert(ZoneNames, i) end
 for i,v in pairs(TeleportLocations['Rods']) do table.insert(RodNames, i) end
 for i,v in pairs(TeleportLocations['Items']) do table.insert(ItemNames, i) end
 for i,v in pairs(TeleportLocations['Fishing Spots']) do table.insert(FishingSpotNames, i) end
+for i,v in pairs(TeleportLocations['NPCs']) do table.insert(NPCNames, i) end
 
 --// Functions
 FindChildOfClass = function(parent, classname)
@@ -489,6 +491,24 @@ TeleportsTab:Button({
     Callback = function()
         if flags.fishlocations and TeleportLocations['Fishing Spots'][flags.fishlocations] then
             gethrp().CFrame = TeleportLocations['Fishing Spots'][flags.fishlocations]
+        end
+    end
+})
+
+TeleportsTab:CollapsingHeader({Title = 'NPCs'})
+TeleportsTab:Combo({
+    Label = 'NPC Locations',
+    Items = NPCNames,
+    Selected = NPCNames[1] or '',
+    Callback = function(self, value)
+        flags.npclocations = value
+    end
+})
+TeleportsTab:Button({
+    Text = 'Teleport To NPC',
+    Callback = function()
+        if flags.npclocations and TeleportLocations['NPCs'][flags.npclocations] then
+            gethrp().CFrame = TeleportLocations['NPCs'][flags.npclocations]
         end
     end
 })
